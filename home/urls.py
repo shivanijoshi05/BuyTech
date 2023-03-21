@@ -36,7 +36,8 @@ urlpatterns = [
          views.edit_product, name='edit_product'),
     path('delete_product/<int:product_id>/',
          views.delete_product, name='delete_product'),
-   
+    path('orders/', views.orders, name='orders'),
+    
     #login/signup/logout 
     path('signup/', views.signup, name='signup'),
     path('login/', views.user_login, name='login'),

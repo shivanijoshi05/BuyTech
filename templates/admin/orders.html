@@ -13,6 +13,70 @@
 {%endblock loginlogout%}
 
 {%block body%}
+<section class="h-100">
+    <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-body">
 
+                        <div class="row">
+
+                            <div class="col">
+
+                                <div class="d-flex jusityfy-content-center mb-2">
+                                    <div>
+                                        <h5>Pending Orders</h5>
+                                        <p>You have {{orders|length}} pending orders</p>
+                                    </div>
+                                </div>
+                                {% if orders %}
+                                {%for item in orders %}
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="d-flex flex-row align-items-center">
+                                                <div>
+                                                    <img src="{{ item.product.image.url}}" class="img-fluid rounded-3"
+                                                        style="width: 65px;">
+                                                </div>
+                                                <div class="ms-3">
+                                                    <h5>{{item.product.name}}</h5>
+                                                    <p class="small mb-0">{{item.product.description}}</p>
+                                                    <p class="small mb-0">Order-id: {{item.id}}</p>
+                                                    <p class="small mb-0">Customer: {{item.order.user.username}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-right align-items-center">
+                                                <div class="ms-3">
+                                                    <p class="small mb-0">Quantity: {{item.quantity}}</p>
+                                                    <p class="small mb-0">Price: {{item.product.price}}</p>
+                                                </div>
+
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        {%endfor%}
+                        {% else %}
+                        <p>You have not placed any orders.</p>
+                        <h5 class="mb-3"><a href="/products/" class="text-body">Continue
+                                shopping<i class="fas fa-long-arrow-alt-right me-2"></i></a></h5>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+</section>
 
 {%endblock body%}

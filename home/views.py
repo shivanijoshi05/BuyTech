@@ -26,10 +26,11 @@ def cart(request):
     if not cart:
         cart = Cart.objects.create(user=request.user)
     items = CartItem.objects.filter(cart=cart)
-    cart.total = cart.get_cart_total(cart.coupon)
+    cart.total = cart.get_cart_total()
     cart.save()
     coupon_form = CouponForm()
-    return render(request, 'customer/cart.html', {'cart_items': items, 'cart': cart, 'coupon_form': coupon_form})
+    coupons = Coupon.objects.all()
+    return render(request, 'customer/cart.html', {'cart_items': items, 'cart': cart, 'coupons':coupons, 'coupon_form': coupon_form})
 
 #adding products to cart
 @login_required()
@@ -41,7 +42,7 @@ def add_to_cart(request, product_id):
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
     if not created:
         item.quantity += 1
-        cart.total = cart.get_cart_total(cart.coupon)
+        cart.total = cart.get_cart_total(cart.coupon_use)
         messages.success(request, 'Cart Updated.')
         item.save()
     messages.success(request, 'Added to cart.')
@@ -83,6 +84,8 @@ def apply_coupon(request):
     code = coupon_form.cleaned_data['code']
     try:
         coupon = Coupon.objects.get(code=code)
+        cart.coupon = coupon
+        cart.save()
     except Coupon.DoesNotExist:
         messages.error(request, 'Invalid coupon code.')
         return redirect('cart')
@@ -100,11 +103,12 @@ def checkout(request):
         form = CheckoutForm(request.POST)
         if form.is_valid():
             cart = Cart.objects.get(user=request.user)
+            cart.remove_coupon()
             if not cart:
                 messages.error(request, 'Your cart is empty.')
                 return redirect('cart')
             order = Order.objects.create(
-                user=request.user, total=cart.total, discount_amount=cart.discount_amount,coupon=cart.coupon)
+                user=request.user, total=cart.total, discount_amount=cart.discount_amount)
             for item in cart.items():
                 OrderItem.objects.create(
                     order=order, product=item.product, quantity=item.quantity, price=item.product.price)
@@ -218,7 +222,12 @@ def delete_product(request, product_id):
 #to display the orders
 @login_required()
 def orders(request):
-    return render(request, 'admin/orders.html')
+  orders = Order.objects.all()
+  placed_orders=[]
+  for order in orders:
+        placed_orders += OrderItem.objects.filter(order=order, product__product_admin=request.user)
+  context = {'orders': placed_orders}
+  return render(request, 'admin/orders.html', context)
 
 #user account creation
 def signup(request):

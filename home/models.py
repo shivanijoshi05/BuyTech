@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 import datetime
 from django.db.models.signals import post_save
 from django.contrib.auth.models import AbstractUser, UserManager
@@ -156,42 +157,63 @@ class Coupon(models.Model):
     code = models.CharField(max_length=50, unique=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     usage_limit = models.PositiveIntegerField(null=True, blank=True)
-    used = models.PositiveIntegerField(default=0)
+    
 
-# to store user cart details
+
+class CouponUse(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE)
+    used = models.PositiveIntegerField(default=0)
+    class Meta:
+        unique_together = ('user', 'coupon')
+
+
 class Cart(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_amount = models.DecimalField(
         max_digits=10, decimal_places=2, default=0)
-    coupon = models.ForeignKey(
-        Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+    coupon_use = models.ForeignKey(
+        CouponUse, on_delete=models.SET_NULL, null=True, blank=True)
+
     def __str__(self):
         return f"Cart {self.id}"
+
     def items(self):
         return CartItem.objects.filter(cart=self)
 
     def apply_coupon(self, coupon):
         if coupon:
-            if coupon.used <= coupon.usage_limit:
-                self.coupon = coupon
-                self.coupon.used += 1 
-                self.discount_amount =self.total - self.coupon.discount
-                self.save()
-                return True
+                coupon_use,created = CouponUse.objects.get_or_create(user=self.user, coupon=coupon)
+                if coupon_use.used < coupon.usage_limit:
+                    coupon_use.save()
+                    self.coupon_use = coupon_use
+                    coupon.save()
+                    self.discount_amount = self.total - coupon.discount
+                    self.save()
+                    return True
         return False
-    
-    def get_cart_total(self,coupon):
+
+    def remove_coupon(self):
+        coupon_use = self.coupon_use
+        if coupon_use:
+            coupon_use.used += 1
+            coupon_use.save()
+        self.coupon_use = None
+        self.discount_amount = 0
+        self.save()
+
+
+    def get_cart_total(self):
         self.total = sum(item.get_total() for item in self.items())
-        if coupon:
-            if self.total>0:
-                self.discount_amount = self.total - coupon.discount
+        if self.coupon_use:
+            if self.total > 0:
+                self.discount_amount = self.total - self.coupon_use.coupon.discount
                 self.save()
             else:
-                self.discount_amount=0
+                self.discount_amount = 0
         return self.total
-
 
 # to store the cart items details
 class CartItem(models.Model):
@@ -215,8 +237,7 @@ class Order(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    coupon = models.ForeignKey(
-        Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+    
     def __str__(self):
         return f"Order {self.id}"
      
@@ -233,3 +254,4 @@ class OrderItem(models.Model):
 
     def get_total(self):
         return self.price * self.quantity
+  
