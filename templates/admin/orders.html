@@ -1,0 +1,18 @@
+{% extends "admin/admin_base.html" %}
+{%load static%}
+{%block title%} Orders {%endblock title%}
+{%block ordersactive%} active {%endblock ordersactive%}
+{%block loginlogout%}
+<li class="nav-item">
+    {% if request.user.is_authenticated %}
+    <a class="btn btn-outline-light" href="/logout/">Logout</a>
+    {% else %}
+    <a class="btn btn-outline-light" href="/login/">Login</a>
+    {% endif %}
+</li>
+{%endblock loginlogout%}
+
+{%block body%}
+
+
+{%endblock body%}

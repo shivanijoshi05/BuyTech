@@ -1,0 +1,105 @@
+{% extends "customer/base.html" %}
+{%load static%}
+{%block title%} View Order{%endblock title%}
+{%block loginlogout%}
+<li class="nav-item">
+  {% if request.user.is_authenticated %}
+  <a class="btn btn-outline-light" href="/logout/">Logout</a>
+  {% else %}
+  <a class="btn btn-outline-light" href="/login/">Login</a>
+  {% endif %}
+</li>
+{%endblock loginlogout%}
+
+{%block body%}
+
+{%if messages%}
+<div class="alert alert-success my-0" role="alert">
+  {% for message in messages %}
+  <small {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</small>
+  {% endfor %}
+</div>
+{%endif%}
+
+
+<section class="h-100">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-md-10">
+        <div class="card">
+          <div class="card-body">
+
+            <div class="row">
+
+              <div class="col">
+                <h5 class="mb-3"><a href="/products/" class="text-body"><i
+                      class="fas fa-long-arrow-alt-left me-2"></i>Continue
+                    shopping</a></h5>
+                <hr>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div>
+                    <p class="mb-1">Order History</p>
+                    <p class="mb-0">You have {{order_items|length}} items in your order</p>
+                  </div>
+                </div>
+                {%for item in order_items %}
+                <div class="card mb-3">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                      <div class="d-flex flex-row align-items-center">
+                        <div>
+                          <img src="{{ item.product.image.url}}" class="img-fluid rounded-3" alt="Shopping item"
+                            style="width: 65px;">
+                        </div>
+                        <div class="ms-3">
+                          <h5>{{item.product.name}}</h5>
+                          <p class="small mb-0">{{item.product.description}}</p>
+                        </div>
+                      </div>
+                      <div class="d-flex flex-row align-items-center">
+
+                        <h5 class="fw-normal mb-0">{{item.quantity}}</h5>
+
+                      </div>
+
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            {%endfor%}
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between">
+              <p class="mb-2">Total Price</p>
+              <p class="mb-2">${{order.total}}</p>
+            </div>
+           <div class="d-flex justify-content-between">
+                    <p class="mb-2">Coupon Discount </p>
+                    <p class="mb-2"> -${{order.coupon.discount}}</p>
+                </div>
+                 <hr class="my-2">
+                <div class="d-flex justify-content-between">
+                    <p class="mb-2">Total Amount </p>
+                    <p class="mb-2">${{order.discount_amount}}</p>
+                </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+</section>
+
+
+{%endblock body%}

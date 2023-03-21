@@ -1,0 +1,24 @@
+{% extends "customer/base.html" %}
+{%load static%}
+{%block title%}home {%endblock title%}
+{%block homeactive%} active {%endblock homeactive%}
+{%block loginlogout%}
+<li class="nav-item">
+    {% if request.user.is_authenticated %}
+    <a class="btn btn-outline-light" href="/logout/">Logout</a>
+    {% else %}
+    <a class="btn btn-outline-light" href="/login/">Login</a>
+    {% endif %}
+</li>
+{%endblock loginlogout%}
+
+{%block body%}
+{%if messages%}
+<div class="alert alert-success my-0" role="alert">
+   {% for message in messages %}
+        <small {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</small>
+    {% endfor %}
+</div>
+{%endif%}
+
+{% endblock body%}

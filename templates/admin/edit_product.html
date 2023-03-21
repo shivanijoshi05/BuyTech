@@ -1,0 +1,38 @@
+{% extends 'admin/admin_base.html' %}
+{%load static%}
+{%block title%} {{product.name}} {%endblock title%}
+{%block viewproductsactive%} active {%endblock viewproductsactive%}
+{%block loginlogout%}
+<li class="nav-item">
+    {% if request.user.is_authenticated %}
+    <a class="btn btn-outline-light" href="/logout/">Logout</a>
+    {% else %}
+    <a class="btn btn-outline-light" href="/login/">Login</a>
+    {% endif %}
+</li>
+{%endblock loginlogout%}
+
+{%block body%}
+<h2 class="text-center my-3"> Edit Product </h2>
+    <form class="row d-flex justify-content-center"
+        method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="col-8">
+            {% for field in form %}
+            <label class="form-label">{{field.label}} </label>
+            <div class="controls">
+                {{ field }}
+                <span class="help-inline">
+                    {% for error in field.errors %}<small
+                        style="color: red">{{ error }}</small><br />{% endfor %}
+                </span>
+            </div><br/>
+            {% endfor %}
+        </div>
+        <div class="col-8">
+            <button type="submit" class="btn btn-dark">Edit Product</button>
+        </div>
+    </form>
+</div>
+
+{%endblock body%}

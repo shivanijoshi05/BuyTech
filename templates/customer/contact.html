@@ -1,0 +1,32 @@
+{% extends "customer/base.html" %}
+{%load static%}
+{%block title%}Contact Me {%endblock title%}
+{%block contactactive%} active {%endblock contactactive%}
+{%block body%}
+<div class="container my-3">
+  <h2 class="text-center"> Contact Me </h2>
+  <form class="row g-4 my-3 d-flex justify-content-center" action="/contact/"
+    method="POST">
+    {% csrf_token %}
+    <div class="col-8">
+      <label for="name" class="form-label">Name</label>
+      <input type="text" class="form-control" id="name" name="name" />
+    </div>
+    <div class="col-8">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" class="form-control" id="email" name="email" />
+    </div>
+    <div class="col-8">
+      <label for="phone" class="form-label">Contact Number</label>
+      <input type="phone" class="form-control" id="phone" name="phone" />
+    </div>
+    <div class="col-8">
+      <label for="msg" class="form-label">Message</label>
+      <textarea class="form-control" id="msg" row="5" name="msg"></textarea>
+    </div>
+    <div class="col-8">
+      <button type="submit" class="btn btn-dark">Submit</button>
+    </div>
+  </form>
+</div>
+{%endblock body%}

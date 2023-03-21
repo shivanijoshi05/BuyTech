@@ -1,0 +1,38 @@
+{% extends "customer/base.html"%}
+{% load static %}
+{%block title%}About Me{%endblock title%}
+{%block aboutactive%} active {%endblock aboutactive%}
+{%block body%}
+<h2 class="text-center mt-3">About Me</h2>
+
+<div class="contanier border border-dark" style="margin:4% 8%; padding:4%">
+  <div class="row d-flex justify-content-center">
+    <div class="col-sm-4">
+      <img class="rounded-circle py-4" src="{% static '/images/shivani.jpg' %}" alt="">
+    </div>
+    <div class="col-sm-6">
+      <h2> Shivani Joshi</h2>
+      <p>Data Science || ML/AI Enthusiat|| Computer Engineer</p>
+      <p style="text-align:justify;">I'm a computer engineer and graduated from
+        vishwakarma government
+        engineering college. My hometown is Jamnagar and currently living in
+        Ahmedabad. I have joined internship at DRC Systems Pvt. Ltd and my
+        job
+        role is Python Developer. My skills include Python, Java, Data
+        Science,
+        Machine Learning, Django, Flask. Also, I'm a very good at designing
+        posters. I have also completed 1 year Artificial Intelligence
+        traning
+        program "TechSaksham" sponsered by Microsoft, SAP and Edunet
+        Foundation.
+        I've developed many projects which includes Text summarization,
+        Speech
+        Emotion Recognition, To-do app. Apart from that, my hobbies include
+        reading, singing and playing badminton.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+{%endblock body%}

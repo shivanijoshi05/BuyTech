@@ -1,0 +1,94 @@
+{% extends "customer/base.html" %}
+{%load static%}
+{%block title%}Your Orders {%endblock title%}
+{%block yourordersactive%} active {%endblock yourordersactive%}
+{%block loginlogout%}
+<li class="nav-item">
+  {% if request.user.is_authenticated %}
+  <a class="btn btn-outline-light" href="/logout/">Logout</a>
+  {% else %}
+  <a class="btn btn-outline-light" href="/login/">Login</a>
+  {% endif %}
+</li>
+{%endblock loginlogout%}
+
+{%block body%}
+{%if messages%}
+<div class="alert alert-success my-0" role="alert">
+  {% for message in messages %}
+  <small {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</small>
+  {% endfor %}
+</div>
+{%endif%}
+<h2 class="text-center my-3"> Your Orders </h2>
+
+
+<section class="h-100">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-md-10">
+        <div class="card">
+          <div class="card-body">
+
+            <div class="row">
+
+              <div class="col">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div>
+                    <p class="mb-1">Orders History</p>
+                    <p class="mb-0">You have {{orders|length}} items in your cart</p>
+                  </div>
+                </div>
+                {% if orders %}
+                  {%for order in orders %}
+                    <div class="card mb-2 mx-3">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                          <div class="d-flex flex-row align-items-center">
+                            <div class="ms-3">
+                              <p>Order Number</p>
+                              <p>{{order.id}}</p>
+                            </div>
+                          </div>
+
+                          <div class="d-flex flex-row align-items-center">
+                            <div class="ms-3">
+                              <p>Order Total</p>
+                              <p>{{order.total}}</p>
+                            </div>
+                          </div>
+
+                          <div class="d-flex flex-row align-items-center">
+                            <div class="ms-3">
+                              <p>Order Placed on </p>
+                              <p>{{order.created_at}}</p>
+                            </div>
+                          </div>
+
+                          <a href=" {% url 'view_order' order.id %} " class="text-decoration-none"> 
+                            <button type="button" class="btn btn-dark">
+                                <span>View Order <i class="fas fa-long-arrow-alt-right ms-2"></i></span>
+                            </button>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  {%endfor%}
+                {% else %}
+                  <p>You have not placed any orders.</p>
+                  <h5 class="mb-3"><a href="/products/" class="text-body">Continue
+                      shopping<i class="fas fa-long-arrow-alt-right me-2"></i></a></h5>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+     </div>
+    </div>
+   </div>
+ </div>
+</section>
+
+{% endblock body%}
