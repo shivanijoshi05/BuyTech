@@ -60,7 +60,6 @@ class Contact(models.Model):
     
 
 #to store the Product details from user
-
 CATEGORY = (
     ('Mobile', 'Mobile'),
     ('Laptop', 'Laptop')
@@ -98,8 +97,9 @@ class Product(models.Model):
         else:
             return Product.get_products()
 
+
 # to store the Mobile details from user
-class Mobile(Product):
+class Mobile(models.Model):
     BRAND_CHOICES = [
         ('Apple', 'Apple'),
         ('Samsung', 'Samsung'),
@@ -107,7 +107,7 @@ class Mobile(Product):
         ('Xiaomi', 'Xiaomi'),
         ('Google', 'Google'),
     ]
-
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     brand = models.CharField(max_length=50, choices=BRAND_CHOICES)
     screen_size = models.DecimalField(max_digits=4, decimal_places=2)
     os = models.CharField(max_length=50)
@@ -115,7 +115,7 @@ class Mobile(Product):
     color = models.CharField(max_length=50)
 
 # to store the Laptop details from user
-class Laptop(Product):
+class Laptop(models.Model):
     BRAND_CHOICES = [
         ('Apple', 'Apple'),
         ('Dell', 'Dell'),
@@ -123,14 +123,14 @@ class Laptop(Product):
         ('HP', 'HP'),
         ('Acer', 'Acer'),
     ]
-
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE)
     brand = models.CharField(max_length=50, choices=BRAND_CHOICES)
     screen_size = models.DecimalField(max_digits=4, decimal_places=2)
     processor = models.CharField(max_length=50)
     ram = models.PositiveIntegerField()
     storage = models.PositiveIntegerField()
-    color=models.CharField(max_length=50)
-
+    color = models.CharField(max_length=50)
 
 
 # to store the profile details from user
@@ -159,7 +159,7 @@ class Coupon(models.Model):
     usage_limit = models.PositiveIntegerField(null=True, blank=True)
     
 
-
+#to track the coupon usage for each user
 class CouponUse(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE)
@@ -168,6 +168,7 @@ class CouponUse(models.Model):
         unique_together = ('user', 'coupon')
 
 
+#to store cart items 
 class Cart(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -204,16 +205,19 @@ class Cart(models.Model):
         self.discount_amount = 0
         self.save()
 
-
     def get_cart_total(self):
         self.total = sum(item.get_total() for item in self.items())
         if self.coupon_use:
             if self.total > 0:
                 self.discount_amount = self.total - self.coupon_use.coupon.discount
-                self.save()
+                
             else:
                 self.discount_amount = 0
+        else:
+            self.discount_amount = self.total
+        self.save()
         return self.total
+
 
 # to store the cart items details
 class CartItem(models.Model):
@@ -230,13 +234,14 @@ class CartItem(models.Model):
         return self.product.price * self.quantity
 
 
-
 # to store user orders
 class Order(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    coupon_use = models.ForeignKey(
+        CouponUse, on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return f"Order {self.id}"

@@ -48,8 +48,6 @@ CATEGORY = (
 
 
 class ProductForm(forms.ModelForm):
-    category = forms.CharField(
-        label="", widget=forms.RadioSelect(choices=CATEGORY))
     name = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Enter Product Name'}))
     price = forms.IntegerField(widget=forms.NumberInput(
@@ -60,13 +58,8 @@ class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        exclude = ['product_admin']
-        fields = [ 'category','name',
-                  'price', 'description', 'image']
-
-        def clean(self):
-            super(ProductForm, self).clean()
-            return self.cleaned_data
+        exclude = ['product_admin', 'category']
+        fields = ['name', 'price', 'description', 'image']
 
 
 # To create Mobile detail form
@@ -91,6 +84,7 @@ class MobileForm(forms.ModelForm):
 
     class Meta:
         model = Mobile
+        exclude = ['product']
         fields = ('brand', 'screen_size', 'os', 'battery', 'color')
 
 
@@ -118,9 +112,9 @@ class LaptopForm(forms.ModelForm):
 
     class Meta:
         model = Laptop
+        exclude = ['product']
         fields = ('brand', 'screen_size', 'processor',
                   'ram', 'storage', 'color')
-
 
 # To edit user signup detail form
 class EditUserForm(forms.ModelForm):
@@ -152,7 +146,9 @@ class ProfileForm(forms.ModelForm):
 # To create user checkout detail form
 class CheckoutForm(forms.Form):
     shipping_address = forms.CharField(max_length=255)
-    billing_address = forms.CharField(max_length=255)
+    name = forms.CharField()
+    email = forms.EmailField()
+    phone = forms.CharField()
 
 #to get coupon details
 class CouponForm(forms.Form):

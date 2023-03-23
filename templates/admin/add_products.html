@@ -1,7 +1,15 @@
 {% extends "admin/admin_base.html" %}
 {%load static%}
-{%block title%} Add Product {%endblock title%}
-{%block addproductsactive%} active {%endblock addproductsactive%}
+{%block title%} Add Product{%endblock%}
+{% block head %}
+<script>
+    $(document).ready(function () {
+    });
+</script>
+{% endblock head%}
+
+{%block addproductsactive%} active {%endblock %}
+
 {%block loginlogout%}
 <li class="nav-item">
     {% if request.user.is_authenticated %}
@@ -14,26 +22,50 @@
 
 {%block body%}
 <div class="container my-3">
-    <h2 class="text-center"> Add Products </h2>
-    <form class="row g-4 my-3 d-flex justify-content-center"
-        method="POST" enctype="multipart/form-data">
+    <h2 class="text-center">Add Products</h2>
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        <div class="col-8">
-            {% for field in product_form %}
-            <label class="form-label">{{field.label}} </label>
-            <div class="controls">
-                {{ field }}
-                <span class="help-inline">
-                    {% for error in field.errors %}<small
-                        style="color: red">{{ error }}</small><br />{% endfor %}
-                </span>
-            </div><br/>
-            {% endfor %}
+            <label for="Mobile"class="form-label">
+                <input class="form-check-input" type="radio" name="category-input" id="Mobile" value="Mobile" {% if category == "Mobile" %} checked {% endif %}>
+                Mobile
+            </label>
+            <label for="Laptop" class="form-label">
+                <input class="form-check-input" type="radio" name="category-input" id="Laptop" value="Laptop" {% if category == "Laptop" %} checked {% endif %}>
+                Laptop
+            </label>
+
+        <div id="form-container">
+            <div class="col-8">
+                {% for field in form %}
+                <label class="form-label">{{field.label}}</label>
+                <div class="controls">
+                    {{ field }}
+                    <span class="help-inline">
+                        {% for error in field.errors %}<small style="color: red">{{ error }}</small><br />{% endfor %}
+                    </span>
+                </div>
+                <br />
+                {% endfor %}
+
+                {% for field in detail_form %}
+                <label class="form-label">{{ field.label }}</label>
+                <div class="controls">
+                    {{ field }}
+                    <span class="help-inline">
+                        {% for error in field.errors %}<small style="color: red">{{ error }}</small><br />
+                        {% endfor %}
+                    </span>
+                </div>
+                <br />
+                {% endfor %}
+            </div>
         </div>
         <div class="col-8">
             <button type="submit" class="btn btn-dark">Add Product</button>
         </div>
+
     </form>
+
 </div>
 
 {%endblock body%}

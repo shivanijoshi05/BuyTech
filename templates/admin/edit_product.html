@@ -28,6 +28,17 @@
                 </span>
             </div><br/>
             {% endfor %}
+            {% for field in detail_form %}
+                <label class="form-label">{{ field.label }}</label>
+                <div class="controls">
+                    {{ field }}
+                    <span class="help-inline">
+                        {% for error in field.errors %}<small style="color: red">{{ error }}</small><br />
+                        {% endfor %}
+                    </span>
+                </div>
+                <br />
+                {% endfor %}
         </div>
         <div class="col-8">
             <button type="submit" class="btn btn-dark">Edit Product</button>
