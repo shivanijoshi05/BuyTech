@@ -15,24 +15,42 @@
 {%block body%}
 
 <div class="container my-3 text-center">
-    <h1>Product: {{product.name}}</h1>
+    <h1>Product: {{detail_product.product.name}}</h1>
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-6">
+            <p><strong>Product Image:</strong><br /><img src="{{ detail_product.product.image.url }}"
+                    style="height: 300px;">
+            <p><strong>Description:</strong> <br />{{ detail_product.product.description }}</p>
 
-    <p><strong>Product Image:</strong><br/><img src="{{ product.image.url }}"
-                style="height: 300px;">
-    <p><strong>Description:</strong> {{ product.description }}</p>
-    <p><strong>Price:</strong> {{ product.price }}</p>
-    {%if user == "Admin" %}
-    <a href="{% url 'edit_product' product.id %}" class="text-decoration-none me-3">
-        <button class="btn btn-dark">Edit Product</button>
-    </a>
-    <a href="{% url 'delete_product' product.id %}" class="text-decoration-none">
-        <button class="btn btn-danger">Delete Product</button>
-    </a>
-    {%else%}
-     <a href="{% url 'add_to_cart' product.id%}" class="text-decoration-none">
-        <button class="btn btn-dark">Add to Cart</button>
-    </a>
-    {% endif %}
- </div>
+            <p><strong>Price:</strong> {{ detail_product.product.price }}</p>
+            <p><strong>Brand:</strong> {{ detail_product.brand }}</p>
+            <p><strong>Screen Size:</strong> {{ detail_product.screen_size }}</p>
+            {%if detail_product.product.category == "Mobile" %}
+            <p><strong>Os:</strong> {{detail_product.os }}</p>
+            <p><strong>battery:</strong> {{ detail_product.battery }}</p>
+            {%endif%}
+            {%if detail_product.product.category == "Laptop" %}
+            <p><strong>Processor:</strong> {{detail_product.processor }}</p>
+            <p><strong>RAM:</strong> {{ detail_product.ram }}</p>
+            <p><strong>Storage:</strong> {{ detail_product.storage }}</p>
+            {%endif%}
+            <p><strong>Color:</strong> {{ detail_product.color }}</p>
+            {%if user == "Admin" %}
+            <a href="{% url 'edit_product' detail_product.product.id %}" class="text-decoration-none me-3">
+                <button class="btn btn-dark">Edit Product</button>
+            </a>
+            <a href="{% url 'delete_product' detail_product.product.id %}" class="text-decoration-none">
+                <button class="btn btn-danger">Delete Product</button>
+            </a>
+            {%else%}
+            <a href="{% url 'add_to_cart' detail_product.product.id%}" class="text-decoration-none">
+                <button class="btn btn-dark">Add to Cart</button>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+
+</div>
 
 {%endblock body%}

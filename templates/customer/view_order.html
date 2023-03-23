@@ -1,6 +1,7 @@
 {% extends "customer/base.html" %}
 {%load static%}
 {%block title%} View Order{%endblock title%}
+{%block yourorderssactive%} active {%endblock yourorderssactive%}
 {%block loginlogout%}
 <li class="nav-item">
   {% if request.user.is_authenticated %}
@@ -80,7 +81,7 @@
             </div>
            <div class="d-flex justify-content-between">
                     <p class="mb-2">Coupon Discount </p>
-                    <p class="mb-2"> -${{order.coupon.discount}}</p>
+                    <p class="mb-2"> -${{order.coupon_use.coupon.discount}}</p>
                 </div>
                  <hr class="my-2">
                 <div class="d-flex justify-content-between">

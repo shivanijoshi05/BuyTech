@@ -17,7 +17,7 @@ urlpatterns = [
          views.increase_cart_item_quantity, name='increase_cart_item_quantity'),
     path('decrease_cart_item_quantity/<int:product_id>/',
          views.decrease_cart_item_quantity, name='decrease_cart_item_quantity'),
-    path('apply_coupon/', views.apply_coupon, name='apply_coupon'),
+    path('apply_coupon/<str:code>/', views.apply_coupon, name='apply_coupon'),
     path('checkout/', views.checkout, name='checkout'),
 
     #order

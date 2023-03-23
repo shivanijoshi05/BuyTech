@@ -86,11 +86,11 @@
             </div>
             {%endfor%}
 
-            <hr class="my-4">
+
             {%if cart.total > 0 and not cart.coupon_use%}
             <div id="coupon-container">
               <div class="col-md-4 my-3">
-                <form method="POST" action="{% url 'apply_coupon' %}">
+                <form method="POST" action="{% url 'apply_coupon' None %}">
                   {% csrf_token %}
                   {{ coupon_form.as_p }}
                   <button class="btn btn-dark mb-3" type="submit">Apply</button>
@@ -98,25 +98,31 @@
                 </form>
                 <p>Available Coupons: </p>
                 {%for coupon in coupons %}
-
-                <div class="d-flex border my-2">
-                  <div class="justify-content-between my-2 mx-2">
-                    <span>Promo code: </span>
-                    <span class="border border-succuess rounded px-2">{{coupon.code}}</span>
+                <a href="{% url 'apply_coupon' coupon.code %}" class="text-decoration-none" style="color:black;">
+                  <div class="d-flex border my-2">
+                    <div class="justify-content-between my-2 mx-2">
+                      <span>Promo code: </span>
+                      <span class="border border-succuess rounded px-2">{{coupon.code}}</span>
+                    </div>
                   </div>
-                </div>
+                </a>
+
                 {%endfor%}
               </div>
             </div>
             {%endif%}
+            {%if cart.total > 0 %}
+            <hr class="my-4">
             <div class="d-flex justify-content-between">
               <p class="mb-2">Total MRP</p>
               <p class="mb-2">${{cart.total}}</p>
             </div>
+            
             <div class="d-flex justify-content-between">
               <p class="mb-2">Coupon Discount </p>
-              <p class="mb-2"> -${{cart.coupon_use.coupon.discount}}</p>
+              <p class="mb-2"> -$ {%if cart.coupon_use %} {{cart.coupon_use.coupon.discount}} {%else%} {{0}} {%endif%}</p>
             </div>
+            
             <hr class="my-2">
             <div class="d-flex justify-content-between">
               <p class="mb-2">Total Amount </p>
@@ -129,6 +135,7 @@
                   <span>Checkout <i class="fas fa-long-arrow-alt-right ms-2"></i></span>
                 </div>
               </button></a>
+            {%endif%}
           </div>
 
         </div>
