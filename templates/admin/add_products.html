@@ -10,16 +10,6 @@
 
 {%block addproductsactive%} active {%endblock %}
 
-{%block loginlogout%}
-<li class="nav-item">
-    {% if request.user.is_authenticated %}
-    <a class="btn btn-outline-light" href="/logout/">Logout</a>
-    {% else %}
-    <a class="btn btn-outline-light" href="/login/">Login</a>
-    {% endif %}
-</li>
-{%endblock loginlogout%}
-
 {%block body%}
 <div class="container my-3">
     <h2 class="text-center">Add Products</h2>

@@ -1,5 +1,5 @@
-from django.contrib.auth.models import User
-import datetime
+from django.core.mail import EmailMessage
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
@@ -7,22 +7,30 @@ from django.db import models
 
 
 #user manager to handle custom fields in USER model
-class UserManager(UserManager):
-    def create_user(self, is_product_admin, username, email, password=None, **kwargs):
+class CustomUserManager(UserManager):
+    def create_user(self, user_type, username, email,password=None, **kwargs):
         if not username:
             raise ValueError('Users must have an username')
 
-        user = self.model(is_product_admin=is_product_admin, username=username,email=email, **kwargs)
+        user = self.model(user_type=user_type,
+                          username=username, email=email, **kwargs)
         user.set_password(password)
+
+        # set is_approved to True by default for users with user_type "Customer"
+        if user.user_type == 'Customer':
+            user.is_approved = True
+
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, is_product_admin, username,email, password, **kwargs):
-      user = self.create_user(is_product_admin,username,email,password,**kwargs)
-      user.is_staff = True
-      user.is_admin = True
-      user.save(using=self._db)
-      return user
+    def create_superuser(self, user_type, username, email, password, **kwargs):
+        user = self.create_user(user_type, username, email, password, **kwargs)
+        user.is_staff = True
+        user.is_admin = True
+        user.is_approved = True
+        user.save(using=self._db)
+        return user
+
     
 
 # to create custom user details from USER class
@@ -31,15 +39,13 @@ class CustomUser(AbstractUser):
         ('Admin', 'Admin'),
         ('Customer', 'Customer')
     )
-    is_product_admin = models.CharField('is_product_admin',choices=USER_TYPE, max_length=128, default='Customer')
+    user_type = models.CharField('user_type',choices=USER_TYPE, max_length=128, default='Customer')
     username = models.CharField('username',max_length=50,unique=True,default="")
     email = models.EmailField('email', unique=True)
-    is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['is_product_admin','email']
-    objects = UserManager()
+    objects = CustomUserManager()
 
     def __str__(self):
         return self.username
@@ -49,6 +55,24 @@ class CustomUser(AbstractUser):
 
     def has_module_perms(self, app_label):
         return True
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            if self.user_type=="Admin":
+                # This is a new user, so set is_approved to False and send an email to the user that wants to create admin account
+                self.is_approved = False
+                message = f'Your account with {self.username} has registered and send for product admin approval.'
+            else:
+                self.is_approved=True
+                message =f"Welcome to Buytech, you're successfully registered as {self.username}"
+                
+            email = EmailMessage("Successfully Registered", message,
+                settings.DEFAULT_FROM_EMAIL,
+                [self.email],
+            )
+            email.send()
+        super().save(*args, **kwargs)
+    
 
 
 #to store the contact us details from user
@@ -75,6 +99,9 @@ class Product(models.Model):
     description = models.CharField(max_length=250)
     image = models.ImageField(upload_to='uploads/products/')
 
+    def __str__(self):
+        return self.name
+    
     @staticmethod
     def get_products():
         return Product.objects.all()
@@ -114,6 +141,9 @@ class Mobile(models.Model):
     battery = models.CharField(max_length=50)
     color = models.CharField(max_length=50)
 
+    def __str__(self):
+        return self.product.name
+
 # to store the Laptop details from user
 class Laptop(models.Model):
     BRAND_CHOICES = [
@@ -131,6 +161,9 @@ class Laptop(models.Model):
     ram = models.PositiveIntegerField()
     storage = models.PositiveIntegerField()
     color = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.product.name
 
 
 # to store the profile details from user
@@ -156,7 +189,10 @@ post_save.connect(create_profile, sender=CustomUser)
 class Coupon(models.Model):
     code = models.CharField(max_length=50, unique=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    usage_limit = models.PositiveIntegerField(null=True, blank=True)
+    usage_limit = models.PositiveIntegerField(blank=True,default=1)
+
+    def __str__(self):
+        return self.code
     
 
 #to track the coupon usage for each user
@@ -179,7 +215,7 @@ class Cart(models.Model):
         CouponUse, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return f"Cart {self.id}"
+        return f"{self.user.username}'s Cart"
 
     def items(self):
         return CartItem.objects.filter(cart=self)
@@ -228,7 +264,7 @@ class CartItem(models.Model):
    
 
     def __str__(self):
-        return f"{self.quantity} x {self.product}"
+        return f"{self.product.name} x {self.quantity}"
 
     def get_total(self):
         return self.product.price * self.quantity
@@ -257,6 +293,9 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=8, decimal_places=2)
 
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity}"
+    
     def get_total(self):
         return self.price * self.quantity
   

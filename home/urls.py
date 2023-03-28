@@ -3,8 +3,7 @@ from home import views
 
 urlpatterns = [
     # customer site pages
-    path('home/', views.home, name='home'),
-    path('products/', views.products, name='products'),
+    path('', views.home, name='home'),
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),
 

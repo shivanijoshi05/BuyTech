@@ -107,7 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -126,6 +126,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Path where media is stored
 
 LOGIN_URL = '/login/'
+
+# Email configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'buytech100@gmail.com'
+EMAIL_HOST_PASSWORD = 'cdybolsfnejsnlqd'
+DEFAULT_FROM_EMAIL = 'buytech100@gmail.com'
+
 
 
 

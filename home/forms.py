@@ -11,7 +11,7 @@ USER_TYPE = (
 
 
 class UserSignupForm(UserCreationForm):
-    is_product_admin = forms.CharField(
+    user_type = forms.CharField(
         label="", widget=forms.RadioSelect(choices=USER_TYPE))
     username = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Enter Username'}))
@@ -24,7 +24,7 @@ class UserSignupForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ['is_product_admin', 'username',
+        fields = ['user_type', 'username',
                   'email', 'password1', 'password2']
 
         def clean(self):

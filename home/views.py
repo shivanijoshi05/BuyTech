@@ -12,19 +12,13 @@ from django.contrib.auth.decorators import login_required
 
 #home page
 def home(request):
-    return render(request, 'customer/home.html')
-
-
-#products display
-def products(request):
     products = Product.get_products()
-    return render(request, 'customer/products.html', context={'products': products})
-
+    return render(request, 'customer/home.html', context={'products': products})
 
 #cart view
 @login_required()
 def cart(request):
-    cart = Cart.objects.filter(user=request.user).first()
+    cart = get_object_or_404(Cart, user = request.user)
     if not cart:
         cart = Cart.objects.create(user=request.user)
     items = CartItem.objects.filter(cart=cart)
@@ -38,10 +32,10 @@ def cart(request):
 #adding products to cart
 @login_required()
 def add_to_cart(request, product_id):
-    cart = Cart.objects.filter(user=request.user).first()
+    cart = get_object_or_404(Cart, user=request.user)
     if not cart:
         cart = Cart.objects.create(user=request.user)
-    product = Product.objects.filter(id=product_id).first()
+    product = get_object_or_404(Product, pk = product_id)
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
     
     if not created:
@@ -55,8 +49,8 @@ def add_to_cart(request, product_id):
 
 # increase quantity of product
 def increase_cart_item_quantity(request, product_id):
-    cart = Cart.objects.filter(user=request.user).first()
-    cart_item = get_object_or_404(CartItem, cart=cart,product=product_id)
+    cart = get_object_or_404(Cart, user=request.user)
+    cart_item = get_object_or_404(CartItem, cart=cart, product=product_id)
     cart_item.quantity += 1
     cart_item.save()
     return redirect('cart')
@@ -64,7 +58,7 @@ def increase_cart_item_quantity(request, product_id):
 
 # decrease quantity of product
 def decrease_cart_item_quantity(request, product_id):
-    cart = Cart.objects.filter(user=request.user).first()
+    cart = get_object_or_404(Cart, user=request.user)
     cart_item = get_object_or_404(CartItem, cart=cart, product=product_id)
     if cart_item.quantity > 1:
         cart_item.quantity -= 1
@@ -80,7 +74,7 @@ def decrease_cart_item_quantity(request, product_id):
 
 # delete product from cart
 def remove_cart_item(request, product_id):
-    cart = Cart.objects.filter(user=request.user).first()
+    cart = get_object_or_404(Cart, user=request.user)
     cart_item = get_object_or_404(CartItem, cart=cart, product=product_id)
     cart_item.delete()
     if not cart.items():
@@ -92,7 +86,7 @@ def remove_cart_item(request, product_id):
 
 #applying coupon
 def apply_coupon(request,code):
-  cart = Cart.objects.filter(user=request.user).first()
+  cart = get_object_or_404(Cart, user=request.user)
   if not cart:
         cart = Cart.objects.create(user=request.user)
   coupon_form = CouponForm(request.POST)
@@ -100,7 +94,7 @@ def apply_coupon(request,code):
       code = coupon_form.cleaned_data['code']
   if code:
     try:
-        coupon = Coupon.objects.get(code=code)
+        coupon = get_object_or_404(Coupon, code = code)
     except Coupon.DoesNotExist:
         messages.error(request, 'Invalid coupon code.')
         return redirect('cart')
@@ -118,7 +112,7 @@ def checkout(request):
     if request.method == 'POST':
         form = CheckoutForm(request.POST)
         if form.is_valid():
-            cart = Cart.objects.get(user=request.user)
+            cart = get_object_or_404(Cart, user=request.user)
             if not cart:
                 messages.error(request, 'Your cart is empty.')
                 return redirect('cart')
@@ -232,17 +226,17 @@ def view_products(request):
 # detail product view
 @login_required()
 def detail_product_view(request, product_id):
-    if request.user.is_product_admin == "Admin":
+    if request.user.user_type == "Admin":
         base_template = 'admin/admin_base.html'
     else:
         base_template = 'customer/base.html'
-    product = Product.objects.filter(id=product_id).first()
+    product = get_object_or_404(Product, pk = product_id)
     if product.category == "Mobile":
         detail_product = get_object_or_404(Mobile, product=product)
     else:
         detail_product = get_object_or_404(Laptop, product=product)
 
-    return render(request, "product_detail.html", {'detail_product': detail_product, 'base_template': base_template, 'user': request.user.is_product_admin})
+    return render(request, "product_detail.html", {'detail_product': detail_product, 'base_template': base_template, 'user': request.user.user_type})
 
 
 # edit product detail
@@ -314,13 +308,18 @@ def signup(request):
             messages.success(request, f'Your account has been created.')
             user = authenticate(username=username, password=password)
             if user is not None:
-                login(request, user)
-                messages.info(
-                    request, f"You are now logged in as @{username}.")
-                if user.is_product_admin == 'Customer':
-                    return redirect("home")
+                if not user.is_approved:
+                    messages.error(
+                        request, 'Your account is still waiting for admin approval.')
+                    return redirect("login")
                 else:
-                    return redirect("product_admin")
+                    login(request, user)
+                    messages.info(
+                        request, f"You are now logged in as @{username}.")
+                    if user.user_type == 'Customer':
+                        return redirect("home")
+                    else:
+                        return redirect("product_admin")
     else:
         form = UserSignupForm()
     context = {'form': form}
@@ -336,13 +335,18 @@ def user_login(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
-                login(request, user)
-                messages.info(
-                    request, f"You are now logged in as @{username}.")
-                if user.is_product_admin == 'Customer':
-                    return redirect("home")
-                else:
-                    return redirect("product_admin")
+                if not user.is_approved:
+                    messages.error(
+                        request, 'Your account is still waiting for admin approval.')
+                    redirect("login")
+                else: 
+                    login(request, user)
+                    messages.info(
+                        request, f"You are now logged in as @{username}.")
+                    if user.user_type == 'Customer':
+                        return redirect("home") 
+                    else:
+                        return redirect("product_admin")
             else:
                 messages.error(request, "Invalid username or password.")
         else:
@@ -356,24 +360,27 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     messages.info(request, "You have successfully logged out.")
-    return redirect("home")
+    if request.user == "Customer":
+        return redirect("home")
+    else:
+        return redirect("login")
 
 
 #to display the profile details
 @login_required()
 def profile(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
-    if request.user.is_product_admin == "Admin":
+    if request.user.user_type == "Admin":
         base_template = 'admin/admin_base.html'
     else:
         base_template = 'customer/base.html'
     return render(request, "profile.html", context={"profile": profile, "base_template": base_template})
 
 
-#to edit the profuile detaila
+#to edit the profile details
 @login_required()
 def edit_profile(request):
-    if request.user.is_product_admin == "Admin":
+    if request.user.user_type == "Admin":
         base_template = 'admin/admin_base.html'
     else:
         base_template = 'customer/base.html'
