@@ -6,8 +6,8 @@
 {%block body%}
 <div class="container my-3">
     <h1>Username: @{{user.username}}</h1>
-    <p><strong>Profile pic:</strong><br/><img src="{{ user.profile.profile_img.url | default_if_none:'#' }}"
-                class ="rounded-circle border" style=" width:200px;height: 200px;"></p> 
+    <p><strong>Profile pic:</strong><br /><img src="{{ user.profile.profile_img.url | default_if_none:'#' }}"
+            class="rounded-circle border" style=" width:200px;height: 200px;"></p>
     <p><strong>Email:</strong> {{ user.email }}</p>
     <p><strong>mobile:</strong> {{ user.profile.mobile }}</p>
     <p><strong>Bio: </strong>{{ user.profile.bio }} </p>
@@ -15,5 +15,5 @@
     <a href="{% url 'edit_profile'%}" class="text-decoration-none me-3">
         <button class="btn btn-dark">Edit Profile</button>
     </a>
- </div>
+</div>
 {%endblock body%}

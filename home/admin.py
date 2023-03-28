@@ -1,7 +1,8 @@
 from django.contrib import admin
-from home.models import Cart, CartItem, Coupon, CustomUser,Contact, Laptop, Mobile, Order, OrderItem, Product, Profile
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from home.models import (Cart, CartItem, Contact, Coupon, CustomUser, Laptop,
+                         Mobile, Order, OrderItem, Product, Profile)
 
 
 class CustomUserAdminForm(UserChangeForm):
@@ -9,6 +10,7 @@ class CustomUserAdminForm(UserChangeForm):
         model = CustomUser
         fields = '__all__'
         exclude = ['password']
+
 
 class CustomUserAdmin(UserAdmin):
     form = CustomUserAdminForm

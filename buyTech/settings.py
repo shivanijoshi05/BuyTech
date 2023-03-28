@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -120,11 +120,14 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+
 # Base url to serve media files
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# Path where media is stored
 
+# Path where media is stored
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+#Login url
 LOGIN_URL = '/login/'
 
 # Email configuration
@@ -135,8 +138,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'buytech100@gmail.com'
 EMAIL_HOST_PASSWORD = 'cdybolsfnejsnlqd'
 DEFAULT_FROM_EMAIL = 'buytech100@gmail.com'
-
-
 
 
 # Default primary key field type

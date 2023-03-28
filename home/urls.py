@@ -7,9 +7,10 @@ urlpatterns = [
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),
 
-    #cart
-    path('cart/',views.cart, name='cart'),
-    path('add_to_cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
+    # cart
+    path('cart/', views.cart, name='cart'),
+    path('add_to_cart/<int:product_id>/',
+         views.add_to_cart, name='add_to_cart'),
     path('remove_cart_item/<int:product_id>/',
          views.remove_cart_item, name='remove_cart_item'),
     path('increase_cart_item_quantity/<int:product_id>/',
@@ -19,15 +20,15 @@ urlpatterns = [
     path('apply_coupon/<str:code>/', views.apply_coupon, name='apply_coupon'),
     path('checkout/', views.checkout, name='checkout'),
 
-    #order
+    # order
     path('your_orders/', views.customer_orders, name='your_orders'),
     path('view_order/<int:order_id>/', views.view_order, name='view_order'),
 
-    #product detail view
+    # product detail view
     path('view_products/<int:product_id>/',
          views.detail_product_view, name='detail_product_view'),
 
-    #admin site pages
+    # admin site pages
     path('product_admin/', views.product_admin, name='product_admin'),
     path('view_products/', views.view_products, name='view_products'),
     path('add_products/', views.add_products, name='add_products'),
@@ -36,13 +37,13 @@ urlpatterns = [
     path('delete_product/<int:product_id>/',
          views.delete_product, name='delete_product'),
     path('orders/', views.orders, name='orders'),
-    
-    #login/signup/logout 
+
+    # login/signup/logout
     path('signup/', views.signup, name='signup'),
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
 
-    #profile 
+    # profile
     path('profile/', views.profile, name='profile'),
     path('profile/edit_profile/', views.edit_profile, name='edit_profile'),
 ]
