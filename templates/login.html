@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     {% load static %}
     <meta charset="UTF-8" />
@@ -7,11 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Log In</title>
 
-    <link
-      href="{% static 'css/bootstrap.min.css'%}"
-      rel="stylesheet"/>
+    <link href="{% static 'css/bootstrap.min.css'%}" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
   </head>
+
   <body>
     <section class="vh-100" style="background-color: antiquewhite;">
       <div class="container-fluid py-5 h-100">
@@ -20,9 +20,7 @@
             <div class="card" style="border-radius: 1rem;">
               <div class="row g-0">
                 <div class="col-md-6 col-lg-6 d-none d-md-block ">
-                  <img
-                    src="{% static 'images/buytech_bg.jpg'%}"
-                    alt="BuyTech" class="img-fluid" style="border-radius:
+                  <img src="{% static 'images/buytech_bg.jpg'%}" alt="BuyTech" class="img-fluid" style="border-radius:
                     1rem 0 0 1rem;" />
                 </div>
                 <div class="col-md-4 col-lg-6 d-flex align-items-center">
@@ -36,32 +34,30 @@
 
                     <h5 class="fw-normal mb-3" style="letter-spacing:
                       1px;">Log In</h5>
-                    <form  method="POST">
+                    <form method="POST">
                       {% csrf_token %}
                       {% for field in login_form %}
-                        <div class="d-flex flex-row align-items-center mb-4">
-                          <div class="form-outline flex-fill mb-0">
-                            <label class="form-label">{{field.label}} </label>
-                            <div class="controls">
-                              {{ field }}
-                              <span class="help-inline">
-                                {% for error in field.errors %}<small
-                                  style="color: red">{{ error }}</small><br />
-                                  {% endfor %}
-                              </span>
-                            </div>
+                      <div class="d-flex flex-row align-items-center mb-4">
+                        <div class="form-outline flex-fill mb-0">
+                          <label class="form-label">{{field.label}} </label>
+                          <div class="controls">
+                            {{ field }}
+                            <span class="help-inline">
+                              {% for error in field.errors %}<small style="color: red">{{ error }}</small><br />
+                              {% endfor %}
+                            </span>
                           </div>
                         </div>
+                      </div>
                       {% endfor %}
                       <div>
                         {% for message in messages %}
-                          <small {% if message.tags %} class="{{ message.tags
-                            }}"{% endif %}>{{ message }}</small>
+                        <small {% if message.tags %} class="{{ message.tags
+                            }}" {% endif %}>{{ message }}</small>
                         {% endfor %}
                       </div>
 
-                      <div
-                        class="d-flex mb-3
+                      <div class="d-flex mb-3
                         mb-lg-4">
                         <button type="submit" class="btn btn-dark btn-lg">
                           Log In
@@ -70,8 +66,7 @@
                     </form>
 
                     <p class="mb-5 pb-lg-2" style="color: #393f81;">Don't have
-                      an account? <a href="/signup/"
-                        style="color: #393f81;">Register here</a></p>
+                      an account? <a href="/signup/" style="color: #393f81;">Register here</a></p>
                     <a href="#!" class="small text-muted">Terms of use.</a>
                     <a href="#!" class="small text-muted">Privacy policy</a>
                   </div>
@@ -82,11 +77,9 @@
         </div>
       </div>
     </section>
-    <script
-      src="{% static 'js/jquery-3.2.1.slim.min.js'%}"></script>
-    <script
-      src="{% static 'js/popper.min.js'%}"></script>
-    <script
-      src="{% static 'js/bootstrap.min.js'%}"></script>
+    <script src="{% static 'js/jquery-3.2.1.slim.min.js'%}"></script>
+    <script src="{% static 'js/popper.min.js'%}"></script>
+    <script src="{% static 'js/bootstrap.min.js'%}"></script>
   </body>
+
 </html>

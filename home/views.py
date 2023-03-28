@@ -1,12 +1,12 @@
-from datetime import timezone
-from django.shortcuts import get_object_or_404, render, redirect
-from home import models
-from home.forms import CheckoutForm, CouponForm, EditUserForm, LaptopForm, MobileForm, ProductForm, ProfileForm, UserSignupForm, UserAuthenticationForm
-from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
-from home.models import Cart, CartItem, Contact, Coupon, CustomUser, Laptop, Mobile, Order, OrderItem, Product, Profile
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-
+from django.shortcuts import get_object_or_404, redirect, render
+from home.forms import (CheckoutForm, CouponForm, EditUserForm, LaptopForm,
+                        MobileForm, ProductForm, ProfileForm,
+                        UserAuthenticationForm, UserSignupForm)
+from home.models import (Cart, CartItem, Contact, Coupon, Laptop, Mobile,
+                         Order, OrderItem, Product, Profile)
 
 # customer site views
 
@@ -18,9 +18,7 @@ def home(request):
 #cart view
 @login_required()
 def cart(request):
-    cart = get_object_or_404(Cart, user = request.user)
-    if not cart:
-        cart = Cart.objects.create(user=request.user)
+    cart, created = Cart.objects.get_or_create(user=request.user)
     items = CartItem.objects.filter(cart=cart)
     cart.total = cart.get_cart_total()
     cart.save()
@@ -65,7 +63,7 @@ def decrease_cart_item_quantity(request, product_id):
         cart_item.save()
     else:
         cart_item.delete()
-    if not cart.items():
+    if not cart.items() and cart.coupon_use:
         cart.coupon_use.used -= 1
         cart.coupon_use=None
         cart.save()
@@ -77,7 +75,7 @@ def remove_cart_item(request, product_id):
     cart = get_object_or_404(Cart, user=request.user)
     cart_item = get_object_or_404(CartItem, cart=cart, product=product_id)
     cart_item.delete()
-    if not cart.items():
+    if not cart.items() and cart.coupon_use:
         cart.coupon_use.used -= 1
         cart.coupon_use = None
         cart.save()

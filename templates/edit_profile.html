@@ -3,36 +3,33 @@
 {%block title%} {{user.username}} {%endblock title%}
 {% block body %}
 <h2 class="text-center my-3"> Edit Profile </h2>
-    <form class="row justify-content-center"
-        method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="col-6">
-            {% for field in form %}
-            <label class="form-label">{{field.label}} </label>
-            <div class="controls">
-                {{ field }}
-                <span class="help-inline">
-                    {% for error in field.errors %}<small
-                        style="color: red">{{ error }}</small><br />{% endfor %}
-                </span>
-            </div><br/>
-            {% endfor %}
-            {% for field in profile_form %}
-            <label class="form-label">{{field.label}} </label>
-            <div class="controls">
-                {{ field }}
-                <span class="help-inline">
-                    {% for error in field.errors %}<small
-                        style="color: red">{{ error }}</small><br />{% endfor %}
-                </span>
-            </div><br/>
-            {% endfor %}
-             <div class="col-8">
+<form class="row justify-content-center" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="col-6">
+        {% for field in form %}
+        <label class="form-label">{{field.label}} </label>
+        <div class="controls">
+            {{ field }}
+            <span class="help-inline">
+                {% for error in field.errors %}<small style="color: red">{{ error }}</small><br />{% endfor %}
+            </span>
+        </div><br />
+        {% endfor %}
+        {% for field in profile_form %}
+        <label class="form-label">{{field.label}} </label>
+        <div class="controls">
+            {{ field }}
+            <span class="help-inline">
+                {% for error in field.errors %}<small style="color: red">{{ error }}</small><br />{% endfor %}
+            </span>
+        </div><br />
+        {% endfor %}
+        <div class="col-8">
             <button type="submit" class="btn btn-dark">Edit Profile</button>
         </div>
-        </div>
-       
-    </form>
+    </div>
+
+</form>
 </div>
 
 {% endblock %}

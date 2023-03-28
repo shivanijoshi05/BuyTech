@@ -2,14 +2,16 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from home.models import CustomUser, Laptop, Mobile, Product, Profile
 
-
-# To create user signup detail form
 USER_TYPE = (
     ('Admin', 'Admin'),
     ('Customer', 'Customer')
 )
+CATEGORY = (
+    ('Mobile', 'Mobile'),
+    ('Laptop', 'Laptop')
+)
 
-
+# To create user signup detail form
 class UserSignupForm(UserCreationForm):
     user_type = forms.CharField(
         label="", widget=forms.RadioSelect(choices=USER_TYPE))
@@ -41,12 +43,6 @@ class UserAuthenticationForm(forms.Form):
 
 
 # To create product detail form
-CATEGORY = (
-    ('Mobile', 'Mobile'),
-    ('Laptop', 'Laptop')
-)
-
-
 class ProductForm(forms.ModelForm):
     name = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'Enter Product Name'}))
@@ -150,7 +146,7 @@ class CheckoutForm(forms.Form):
     email = forms.EmailField()
     phone = forms.CharField()
 
-#to get coupon details
+# to get coupon details
 class CouponForm(forms.Form):
     code = forms.CharField(max_length=50, widget=forms.TextInput(attrs={
         'class': 'form-control',

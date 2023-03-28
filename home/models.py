@@ -1,14 +1,19 @@
-from django.core.mail import EmailMessage
 from django.conf import settings
-from django.db.models.signals import post_save
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.core.mail import EmailMessage
 from django.db import models
-
+from django.db.models.signals import post_save
 
 
 #user manager to handle custom fields in USER model
 class CustomUserManager(UserManager):
-    def create_user(self, user_type, username, email,password=None, **kwargs):
+    """
+    Custom user manager that adds `user_type` and `is_approved` fields.
+
+    Overrides the `create_user` and `create_superuser` methods to ensure that
+    these fields are set correctly.
+    """
+    def create_user(self, user_type, username, email, password=None, **kwargs):
         if not username:
             raise ValueError('Users must have an username')
 
@@ -35,6 +40,12 @@ class CustomUserManager(UserManager):
 
 # to create custom user details from USER class
 class CustomUser(AbstractUser):
+    """
+    Custom user model that adds `user_type` and `is_approved` fields.
+
+    Overrides the `save` method to set `is_approved` and send an email to the user.
+    """
+
     USER_TYPE = (
         ('Admin', 'Admin'),
         ('Customer', 'Customer')
@@ -74,9 +85,11 @@ class CustomUser(AbstractUser):
         super().save(*args, **kwargs)
     
 
-
 #to store the contact us details from user
 class Contact(models.Model):
+    """
+    Model for storing contact form details.
+    """
     name = models.CharField(max_length=20)
     email = models.EmailField()
     phone = models.CharField(max_length=10)
@@ -89,6 +102,14 @@ CATEGORY = (
     ('Laptop', 'Laptop')
 )
 class Product(models.Model):
+    """
+    A model for storing product details.
+
+    The `Product` model stores details about a product, including its name, price,
+    category, description, and image. It also includes methods for retrieving
+    products by various criteria, such as admin, ID, or category.
+    """
+
     product_admin = models.ForeignKey(
         CustomUser,  on_delete=models.CASCADE,
         default=None)
@@ -127,6 +148,13 @@ class Product(models.Model):
 
 # to store the Mobile details from user
 class Mobile(models.Model):
+    """
+    A model for storing mobile details.
+
+    The `Mobile` model  details of a mobile product, including its brand, screen size, 
+    operating system, battery capacity, and color. This model has a foreign key relationship
+    with the Product model, as each Mobile product is associated with one Product instance.
+    """
     BRAND_CHOICES = [
         ('Apple', 'Apple'),
         ('Samsung', 'Samsung'),
@@ -144,8 +172,16 @@ class Mobile(models.Model):
     def __str__(self):
         return self.product.name
 
+
 # to store the Laptop details from user
 class Laptop(models.Model):
+    """
+    A model for storing laptop details.
+
+    The `Laptop` model  details of a laptop product, including its brand, screen size, processor, 
+    RAM, storage capacity, and color. This model has a foreign key relationship with the 
+    Product model, as each Laptop product is associated with one Product instance.
+    """
     BRAND_CHOICES = [
         ('Apple', 'Apple'),
         ('Dell', 'Dell'),
@@ -168,6 +204,10 @@ class Laptop(models.Model):
 
 # to store the profile details from user
 class Profile(models.Model):
+    """
+    A model to store additional details of a user such as profile image, mobile number, 
+    bio, and address.
+    """
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     profile_img = models.ImageField(
         default='uploads/profiles/profile.png', upload_to='uploads/profiles')
@@ -179,6 +219,10 @@ class Profile(models.Model):
 
 #profile creation
 def create_profile(sender, instance, created, *args, **kwargs):
+    """
+    create_profile: A signal receiver function to automatically create a profile for a 
+    newly created user.
+    """
     if not created:
         return
     Profile.objects.create(user=instance)
@@ -187,6 +231,11 @@ post_save.connect(create_profile, sender=CustomUser)
 
 # to create coupon
 class Coupon(models.Model):
+    """
+    A model `Coupon` used to store coupon details such as code, discount, and 
+    usage_limit. 
+    """
+
     code = models.CharField(max_length=50, unique=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     usage_limit = models.PositiveIntegerField(blank=True,default=1)
@@ -197,6 +246,12 @@ class Coupon(models.Model):
 
 #to track the coupon usage for each user
 class CouponUse(models.Model):
+    """
+    A model to track the usage of coupons for each user. It has fields to store the 
+    user ID, coupon ID, and the number of times the coupon has been used. It also has 
+    a unique constraint to ensure that a user can only use a coupon once
+    """
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE)
     used = models.PositiveIntegerField(default=0)
@@ -206,6 +261,11 @@ class CouponUse(models.Model):
 
 #to store cart items 
 class Cart(models.Model):
+    """
+    A Cart model to store cart items, and related functions to manage 
+    the cart such as applying or removing coupons, calculating the total cost of 
+    the cart, and getting the list of cart items.
+    """
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -257,6 +317,9 @@ class Cart(models.Model):
 
 # to store the cart items details
 class CartItem(models.Model):
+    """
+    A model to store the details of a product added to a cart.
+    """
     cart = models.ForeignKey(
         Cart, on_delete=models.CASCADE, related_name='cart_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -272,6 +335,9 @@ class CartItem(models.Model):
 
 # to store user orders
 class Order(models.Model):
+    """
+    A Order model represents a user's order with their purchased items. 
+    """
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -287,6 +353,9 @@ class Order(models.Model):
 
 # to store the order item details 
 class OrderItem(models.Model):
+    """
+    A OrderItem model represents an item purchased in an order.
+    """
     order = models.ForeignKey(
         Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
