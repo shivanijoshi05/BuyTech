@@ -1,18 +1,6 @@
 {% extends base_template %}
 {%load static%}
 {%block title%} {{user.username}} {%endblock title%}
-{%block profileactive%} active {%endblock profileactive%}
-{%block loginlogout%}
-<li class="nav-item">
-    {% if request.user.is_authenticated %}
-    <a class="btn btn-outline-light" href="/logout/">Logout</a>
-    {% else %}
-    <a class="btn btn-outline-light" href="/login/">Login</a>
-    {% endif %}
-</li>
-{%endblock loginlogout%}
-
-
 {% block body %}
 <h2 class="text-center my-3"> Edit Profile </h2>
     <form class="row justify-content-center"

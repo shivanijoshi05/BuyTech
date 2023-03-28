@@ -2,23 +2,59 @@
 {%load static%}
 {%block title%}home {%endblock title%}
 {%block homeactive%} active {%endblock homeactive%}
-{%block loginlogout%}
-<li class="nav-item">
-    {% if request.user.is_authenticated %}
-    <a class="btn btn-outline-light" href="/logout/">Logout</a>
-    {% else %}
-    <a class="btn btn-outline-light" href="/login/">Login</a>
-    {% endif %}
-</li>
-{%endblock loginlogout%}
 
 {%block body%}
 {%if messages%}
 <div class="alert alert-success my-0" role="alert">
-   {% for message in messages %}
-        <small {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</small>
+    {% for message in messages %}
+    <small {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</small>
     {% endfor %}
 </div>
 {%endif%}
+<h2 class="text-center my-3"> Products </h2>
 
+<section style="display: flex; flex-direction: row; flex-wrap: wrap ;">
+    {% for product in products %}
+    <div class="card" style="width: 20rem; margin:10px;">
+
+        <div class="bg-image hover-overlay ripple ripple-surface ripple-surface-light" data-mdb-ripple-color="light">
+            <div class="card-img-container mt-2" style=" display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;"><img src="{{ product.image.url }}" class="card-img-top mx-auto img-fluid"
+                    style="border-top-left-radius: 15px; border-top-right-radius: 15px; width:200px; height:200px;">
+                <a href="#!">
+                    <div class="mask"></div>
+                </a>
+            </div>
+
+        </div>
+        <div class="card-body pb-0">
+            <div class="text-center">
+                <div>
+                    <p class="text-dark">{{product.name}}</p>
+                    <p class="small text-muted">{{product.category}}</p>
+                </div>
+            </div>
+        </div>
+        <hr class="my-0" />
+        <div class="card-body pb-0">
+            <div class="d-flex justify-content-between align-items-center pb-2 mb-1">
+                <p><a href="#!" class="text-dark text-decoration-none">Price</a></p>
+                <p><a href="#!" class="text-dark text-decoration-none">₹{{product.price}}</a></p>
+            </div>
+        </div>
+        <hr class="my-0" />
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center pb-2 mb-1">
+                <a href="{% url 'detail_product_view' product.id %}" class="text-decoration-none text-dark">View</a>
+                <a href="{% url 'add_to_cart' product.id %}" class="text-decoration-none">
+                    <button class="btn btn-primary">Add to Cart</button>
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+    {% endfor %}
+</section>
 {% endblock body%}

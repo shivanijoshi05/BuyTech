@@ -14,9 +14,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Static files
-/static/
-
 #media files
 /media/
 
