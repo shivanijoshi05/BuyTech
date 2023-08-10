@@ -3,7 +3,8 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.mail import EmailMessage
 from django.db import models
 from django.db.models.signals import post_save
-
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 #user manager to handle custom fields in USER model
 class CustomUserManager(UserManager):
@@ -28,12 +29,17 @@ class CustomUserManager(UserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, user_type, username, email, password, **kwargs):
-        user = self.create_user(user_type, username, email, password, **kwargs)
-        user.is_staff = True
-        user.is_admin = True
+    def create_superuser(self, username, email, password):
+
+        if password is None:
+            raise TypeError('Superusers must have a password.')
+
+        user = self.create_user(user_type='Admin', email=email,username=username,password=password)
+        user.is_superuser = True
         user.is_approved = True
-        user.save(using=self._db)
+        user.is_staff = True
+        user.save()
+
         return user
 
     
@@ -76,12 +82,16 @@ class CustomUser(AbstractUser):
             else:
                 self.is_approved=True
                 message =f"Welcome to Buytech, you're successfully registered as {self.username}"
-                
-            email = EmailMessage("Successfully Registered", message,
-                settings.DEFAULT_FROM_EMAIL,
-                [self.email],
-            )
-            email.send()
+            try:
+                validate_email(self.email) 
+                email = EmailMessage("Successfully Registered", message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [self.email],
+                )
+                email.send()
+            except ValidationError:
+                # Handle the case of an invalid email address
+                pass
         super().save(*args, **kwargs)
     
 
