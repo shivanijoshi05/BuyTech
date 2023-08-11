@@ -16,7 +16,9 @@
         <a class="navbar-brand" hre0f="/home/">BuyTech</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+          <!-- <span class="navbar-toggler-icon"></span> -->
+          <i class="fas fa-bars"></i>
+          <i></i>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -33,7 +35,7 @@
 
           <li class="nav-item px-3">
             {% if request.user.is_authenticated %}
-          <li class="nav-item">
+          <li class="navbar-nav">
             <a class="nav-link {%block yourorderssactive%} {%endblock %}" href="/your_orders/">Your Orders</a>
           </li>
           <li class="navbar-nav">
