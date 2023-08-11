@@ -24,8 +24,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-&)oj^n^0eir6zl(tocx_0=$(wz*9+$!dhu(pzq1epc&j+lwsdo'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
 
+# Import environment-specific settings based on condition
+if os.environ.get('DJANGO_ENV') == 'production':
+    from .production import *
+else:
+    from .dev import *
+    
 ALLOWED_HOSTS = ["*"]
 
 
@@ -112,20 +117,6 @@ TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
-
-# Base url to serve media files
-MEDIA_URL = "/media/"
-
-# Path where media is stored
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 #Login url
 LOGIN_URL = '/login/'
