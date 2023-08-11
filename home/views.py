@@ -31,9 +31,7 @@ def cart(request):
 #adding products to cart
 @login_required()
 def add_to_cart(request, product_id):
-    cart = get_object_or_404(Cart, user=request.user)
-    if not cart:
-        cart = Cart.objects.create(user=request.user)
+    cart, created = Cart.objects.get_or_create(user=request.user)
     product = get_object_or_404(Product, pk = product_id)
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
     
