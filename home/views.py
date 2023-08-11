@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from .decorators import admin_login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from home.forms import (CheckoutForm, CouponForm, EditUserForm, LaptopForm,
                         MobileForm, ProductForm, ProfileForm,
@@ -170,12 +171,13 @@ def contact(request):
 #product admin site 
 
 #dashboard for admin
+@admin_login_required
 def product_admin(request):
     return render(request, 'admin/product_admin.html')
 
 
 # adding products on admin site
-@login_required()
+@admin_login_required
 def add_products(request):
     category = request.POST.get('category-input')
     if request.method == 'POST':
@@ -214,7 +216,7 @@ def add_products(request):
 
 
 # products display entered by admin
-@login_required()
+@admin_login_required
 def view_products(request):
     product_admin = request.user
     products = Product.get_products_by_admin(product_admin=product_admin)
@@ -238,7 +240,7 @@ def detail_product_view(request, product_id):
 
 
 # edit product detail
-@login_required()
+@admin_login_required
 def edit_product(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
     form = ProductForm(instance=product)
@@ -271,7 +273,7 @@ def edit_product(request, product_id):
 
 
 # delete product
-@login_required()
+@admin_login_required
 def delete_product(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
     if product.category == "Mobile":
@@ -285,7 +287,7 @@ def delete_product(request, product_id):
 
 
 #to display the orders
-@login_required()
+@admin_login_required
 def orders(request):
   orders = Order.objects.all()
   placed_orders=[]
@@ -306,7 +308,7 @@ def signup(request):
             messages.success(request, f'Your account has been created.')
             user = authenticate(username=username, password=password)
             if user is not None:
-                if not user.is_approved:
+                if not user.is_approved and user.user_type=="Admin":
                     messages.error(
                         request, 'Your account is still waiting for admin approval.')
                     return redirect("login")
@@ -333,7 +335,7 @@ def user_login(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
-                if not user.is_approved:
+                if not user.is_approved and user.user_type=="Admin":
                     messages.error(
                         request, 'Your account is still waiting for admin approval.')
                     redirect("login")
