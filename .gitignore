@@ -19,6 +19,7 @@ __pycache__/
 
 # Environments
 env/
+.env 
 
 # Visual Studio Code # 
 .vscode/* 

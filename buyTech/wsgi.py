@@ -11,6 +11,15 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'buyTech.settings')
+from decouple import config
+
+# Load environment variables from .env file
+DJANGO_ENV = config('DJANGO_ENV', default='development')
+
+# Rest of the wsgi.py code...
+
+# Set the Django settings module based on environment
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'buyTech.' + DJANGO_ENV)
+
 
 application = get_wsgi_application()
