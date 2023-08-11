@@ -24,7 +24,7 @@ class CustomUserManager(UserManager):
 
         # set is_approved to True by default for users with user_type "Customer"
         if user.user_type == 'Customer':
-            user.is_approved = True
+            user.is_approved = False
 
         user.save(using=self._db)
         return user
@@ -75,12 +75,11 @@ class CustomUser(AbstractUser):
     
     def save(self, *args, **kwargs):
         if not self.pk:
+            self.is_approved = False
             if self.user_type=="Admin":
                 # This is a new user, so set is_approved to False and send an email to the user that wants to create admin account
-                self.is_approved = False
                 message = f'Your account with {self.username} has registered and send for product admin approval.'
             else:
-                self.is_approved=True
                 message =f"Welcome to Buytech, you're successfully registered as {self.username}"
             try:
                 validate_email(self.email) 
