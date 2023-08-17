@@ -18,7 +18,9 @@ urlpatterns = [
     path('decrease_cart_item_quantity/<int:product_id>/',
          views.decrease_cart_item_quantity, name='decrease_cart_item_quantity'),
     path('apply_coupon/<str:code>/', views.apply_coupon, name='apply_coupon'),
+    path('save_shipping_address/', views.save_shipping_address, name='save_shipping_address'),
     path('checkout/', views.checkout, name='checkout'),
+    path('update_order_status/', views.update_order_status, name='update_order_status'),
 
     # order
     path('your_orders/', views.customer_orders, name='your_orders'),

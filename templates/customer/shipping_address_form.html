@@ -1,0 +1,35 @@
+
+{% for field in form %}
+{% if field.name == 'address_line1' or field.name == 'city' %}
+<div class="row py-1">
+    <div class="col-md-6">
+        <label class="form-label">{{ field.label }}</label>
+        <div class="controls">
+            {{ field }}
+            <span class="help-inline error-message" id="{{ field.name }}-error">
+            </span>
+        </div>
+    </div>
+    {% elif field.name == 'address_line2' or field.name == 'state' %}
+    <div class="col-md-6">
+        <label class="form-label">{{ field.label }}</label>
+        <div class="controls">
+            {{ field }}
+            <span class="help-inline error-message" id="{{ field.name }}-error">
+            </span>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row py-1">
+    <div class="col-md-12">
+        <label class="form-label">{{ field.label }}</label>
+        <div class="controls">
+            {{ field }}
+            <span class="help-inline error-message" id="{{ field.name }}-error">
+            </span>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}

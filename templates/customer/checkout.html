@@ -4,25 +4,239 @@
 
 {%block body%}
 <h2 class="text-center my-3"> Checkout </h2>
-    <form class="row d-flex justify-content-center"
-        method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="col-8">
-            {% for field in form %}
-            <label class="form-label">{{field.label}} </label>
-            <div class="controls">
-                {{ field }}
-                <span class="help-inline">
-                    {% for error in field.errors %}<small
-                        style="color: red">{{ error }}</small><br />{% endfor %}
-                </span>
-            </div><br/>
-            {% endfor %}
+<div class="row  justify-content-center">
+    <div class="col-5">
+        <div id="shipping-address">
+            <h3>Shipping Address</h3>
+            <div id="shipping-details" style="display: none;">
+
+            </div>
+            <form method="POST" enctype="multipart/form-data" id="form-address">
+                {% csrf_token %}
+                <div id="shipping-address-form">
+                    {% with form=form %}
+                    {% include 'customer/shipping_address_form.html' %}
+                    {% endwith %}
+                </div>
+                <button type="submit" class="btn btn-dark my-2" id="save-address">Save</button>
+            </form>
+            <div id="shipping-address-error" style="color:red;"></div>
         </div>
-        <div class="col-8">
-            <button type="submit" class="btn btn-dark">Place Order</button>
-        </div>
-    </form>
+    </div>
+    <div class="col-5">
+            <div class="order-summary mb-4">
+                <div class="card" style="height: auto;">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h5 class="mb-1">Order Summary</h5>
+                                        <p class="mb-0 pb-0">You have {{order_items|length}} items in your orders</p>
+                                    </div>
+                                </div>
+                                {%for item in order_items %}
+                                <div class="card mb-2">
+                                    <div class="card-body px-2 py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="d-flex flex-row align-items-center">
+                                                <div>
+                                                    <img src="{{ item.product.image.url}}" class="img-fluid rounded-3"
+                                                        alt="Shopping item" style="width: 40px;">
+                                                </div>
+                                                <div class="ms-2">
+                                                    <p class="my-0">{{item.product.name}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-row align-items-center">
+                                                <div class="ms-2">
+                                                    <p class="my-0">₹{{item.product.price}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {%endfor%}
+                                {%if order.total > 0 %}
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between">
+                                    <p class="mb-2">Total MRP</p>
+                                    <p class="mb-2">₹{{order.total}}</p>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <p class="mb-2">Coupon Discount </p>
+                                    <p class="mb-2"> -₹ {{order.coupon_use.coupon.discount}}</p>
+                                </div>
+                                
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between">
+                                    <p class="mb-2">Total Amount </p>
+                                    <p class="mb-2">₹{{order.discount_amount}}</p>
+                                </div>
+                                {%endif%}
+                            </div>
+                            
+                        </div>
+                      
+
+                        
+                    </div>
+
+                </div>
+            </div>
+            <div id="paypal-button-container"></div>
+    </div>
 </div>
+</div>
+<!-- Include the PayPal JavaScript SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id=AS21f5hSDx6Rav8nmlB56BzxlJ90Zd5MuWnm1hCF0Tv2AcBwpjpFxvJSEVFGcOKSFPqmkL15Mo2yIPsG&currency=USD"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function initPayPalButton() {
+        $('#shipping-address-error').empty();
+        paypal.Buttons({
+            style: {
+                shape: 'rect',
+                color: 'gold',
+                layout: 'vertical',
+                label: 'paypal',
+            },
+
+            createOrder: function (data, actions) {
+                var isFormFilled = $('#shipping-details').is(':visible');
+                console.log(isFormFilled);
+                if (isFormFilled) {
+                    return actions.order.create({
+                        purchase_units: [{ "amount": { "currency_code": "USD", "value": '{{order.total}}' } }],
+                        application_context: {
+                            shipping_preference: 'NO_SHIPPING'
+                        },
+                    });
+                }
+                else{
+                    $('#shipping-address-error').html('<p>Please save the address.<p>');
+                }
+                
+            },
+
+           onApprove: function (data, actions) {
+                return actions.order.capture().then(function (orderData) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/update_order_status/',  // Replace with the actual URL
+                        data: {
+                            order_id: '{{order.id}}',
+                        },
+                        headers: {
+                            'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                console.log('Done.....')
+                                window.location.href = '/your_orders/';  // Replace with the actual URL
+                            } else {
+                                console.log('Failed to update order status.',message);
+                            }
+                        },
+                        error: function () {
+                            console.log('An error occurred while updating order status.');
+                        }
+                    });
+                });
+            },
+
+            onError: function (err) {
+                console.log(err)
+                $('#shipping-address-error').html('Payment failed! Try again');
+
+            },
+            onCancel: function (data) {
+                // Handle payment cancellation
+                 $('#shipping-address-error').html('Payment Canceled! Try again');
+            }
+
+
+        }).render('#paypal-button-container');
+    }
+    initPayPalButton();
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#id_pin_code').on('input', function () {
+            var pinCode = $(this).val();
+            getAddressDataFromPinCode(pinCode);
+        });
+
+        function getAddressDataFromPinCode(pinCode) {
+            var apiUrl = 'https://api.zippopotam.us/in/' + pinCode;
+
+            $.ajax({
+                url: apiUrl,
+                type: 'GET',
+                success: function (data) {
+                    if (data && data.places && data.places[0]) {
+                        var place = data.places[0];
+                        console.log(place['place name'])
+                        $('#id_state').val(place['state']);
+                        $('#id_country').val(data['country']);
+                    }
+                },
+                error: function (error) {
+                    console.log('Error fetching address data:', error);
+                }
+            });
+            }
+         });
+
+        const $form = $('#form-address');
+        var $saveEditButton = $('#save-address');
+        var $shippingDetails = $('#shipping-details');
+        var orderId = '{{order.id}}';
+
+        $saveEditButton.click(function () {
+            event.preventDefault();
+            $('#shipping-address-error').empty();
+            var formData = $form.serialize();
+           
+            $.ajax({
+                type: 'POST',
+                url: '/save_shipping_address/',  // Replace with the actual URL
+                data: {
+                    order_id: orderId,
+                    form_data: formData
+                },
+                headers: {
+                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        if ($saveEditButton.text() === 'Edit') {
+                            $('#shipping-address-form').show();
+                            $shippingDetails.hide();
+                            $saveEditButton.text('Save');
+                        } else {
+                            $('#shipping-address-form').hide();
+                            $shippingDetails.html(response.details).show();
+                            $saveEditButton.text('Edit');
+                        }
+                    } else {
+                       $.each(response.errors, function (field, errors) {
+                            const errorContainer = $('#' + field + '-error');
+                            const errorMsgs = errors.join('<br>');
+
+                            errorContainer.html('<small style="color: red">' + errorMsgs + '</small><br>');
+                        });
+                    }
+                },
+                error: function () {
+                    alert('Failed saving an address');
+                }
+            });
+        });   
+</script>
 
 {%endblock body%}

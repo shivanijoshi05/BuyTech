@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from home.models import CustomUser, Laptop, Mobile, Product, Profile
+from home.models import CustomUser, Laptop, Mobile, Product, Profile, ShippingAddress
 
 USER_TYPE = (
     ('Admin', 'Admin'),
@@ -140,11 +140,36 @@ class ProfileForm(forms.ModelForm):
 
 
 # To create user checkout detail form
-class CheckoutForm(forms.Form):
-    shipping_address = forms.CharField(max_length=255)
-    name = forms.CharField()
-    email = forms.EmailField()
-    phone = forms.CharField()
+class ShippingAddressForm(forms.ModelForm):
+    name = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Name'}))
+    email = forms.EmailField(widget=forms.EmailInput(
+        attrs={'class': 'form-control', 'placeholder': 'Email'}
+    ))
+    address_line1 = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Address Line 1'}
+    ))
+    address_line2 = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Address Line 2'}
+    ))
+    pin_code = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Pin Code'}
+    ))
+    city = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'City/Town'}))
+    state = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'State'}))
+    country = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'Country'}))
+    
+    class Meta:
+        model = ShippingAddress
+        fields = [
+            'name', 'email', 'address_line1', 'address_line2',
+            'pin_code', 'city', 'state', 'country'
+        ]
+
+
 
 # to get coupon details
 class CouponForm(forms.Form):

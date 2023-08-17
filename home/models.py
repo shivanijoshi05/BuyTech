@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.dispatch import receiver
 
 #user manager to handle custom fields in USER model
 class CustomUserManager(UserManager):
@@ -139,20 +140,15 @@ class Product(models.Model):
     def get_products_by_admin(product_admin):
         if product_admin:
             return Product.objects.filter(product_admin=product_admin)
-        else:
-            return Product.get_products()
+        
     @staticmethod
     def get_products_by_id(id):
         if id:
             return Product.objects.filter(id=id) 
-        else:
-            return Product.get_products()
     @staticmethod
     def get_products_by_category(category):
         if category:
             return Product.objects.filter(category=category)
-        else:
-            return Product.get_products()
 
 
 # to store the Mobile details from user
@@ -353,12 +349,23 @@ class Order(models.Model):
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     coupon_use = models.ForeignKey(
         CouponUse, on_delete=models.SET_NULL, null=True, blank=True)
+    is_order_placed =  models.BooleanField(default=False)
     
     def __str__(self):
         return f"Order {self.id}"
      
     def placeOrder(self):
         self.save()
+
+@receiver(post_save, sender=Cart)
+def update_order_on_cart_change(sender, instance, **kwargs):
+    order = Order.objects.filter(user=instance.user, is_order_placed=False).first()
+    if order:
+        order.total = instance.total
+        order.discount_amount = instance.discount_amount
+        order.coupon_use = instance.coupon_use
+        order.save()
+
 
 # to store the order item details 
 class OrderItem(models.Model):
@@ -376,4 +383,25 @@ class OrderItem(models.Model):
     
     def get_total(self):
         return self.price * self.quantity
-  
+
+# to store the shipping address
+class ShippingAddress(models.Model):
+    """
+    A ShippingAddress model represents a shipping address of an order.
+    """
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE)
+    user =  models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    name = models.CharField(max_length=60)
+    email = models.EmailField('email')
+    address_line1 = models.CharField(max_length=60)
+    address_line2 = models.CharField(max_length=60)
+    pin_code = models.CharField(max_length=6)
+    city = models.CharField(max_length=60)
+    state = models.CharField(max_length=60)
+    country = models.CharField(max_length=60)
+    
+    def __str__(self):
+        return f"Shipping Address of {self.user.username} for order - {self.order.id}"
+    
+    

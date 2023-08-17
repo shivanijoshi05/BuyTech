@@ -1,14 +1,17 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseBadRequest, JsonResponse
 from .decorators import admin_login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from home.forms import (CheckoutForm, CouponForm, EditUserForm, LaptopForm,
-                        MobileForm, ProductForm, ProfileForm,
+from home.forms import (CouponForm, EditUserForm, LaptopForm,
+                        MobileForm, ProductForm, ProfileForm, ShippingAddressForm,
                         UserAuthenticationForm, UserSignupForm)
 from home.models import (Cart, CartItem, Contact, Coupon, Laptop, Mobile,
-                         Order, OrderItem, Product, Profile)
-
+                         Order, OrderItem, Product, Profile,ShippingAddress)
+import paypalrestsdk 
+from django.http import QueryDict
+from django.template.loader import render_to_string
 # customer site views
 
 #home page
@@ -103,31 +106,98 @@ def apply_coupon(request,code):
       messages.error(request, 'Invalid coupon code.')
   return redirect('cart')
 
-
-#checkout and place order
-def checkout(request):
+# to save or edit the shipping address
+def save_shipping_address(request):
     if request.method == 'POST':
-        form = CheckoutForm(request.POST)
+        order_id = request.POST.get('order_id')
+        form_data = request.POST.get('form_data')
+
+        if not order_id or not form_data:
+            return JsonResponse({'success': False, 'message': 'Missing order ID or form data'})
+
+        order = get_object_or_404(Order, id=order_id)
+        form_data_dict = QueryDict(form_data).dict()
+        shipping_address, _ = ShippingAddress.objects.get_or_create(order=order, user=request.user)
+
+        form = ShippingAddressForm(form_data_dict,instance=shipping_address)
         if form.is_valid():
-            cart = get_object_or_404(Cart, user=request.user)
-            if not cart:
-                messages.error(request, 'Your cart is empty.')
-                return redirect('cart')
-            order = Order.objects.create(
-                user=request.user, total=cart.total, discount_amount=cart.discount_amount, coupon_use=cart.coupon_use)
-            cart.remove_coupon()
-            for item in cart.items():
-                OrderItem.objects.create(
-                    order=order, product=item.product, quantity=item.quantity, price=item.product.price)
-            CartItem.objects.filter(cart=cart).delete()
-            messages.success(request, 'Your order has been placed.')
-            return redirect('your_orders')
+            shipping_address.user = request.user
+            shipping_address.order = order
+            shipping_address.save()
+
+            concatenated_address = f'{shipping_address.address_line1}, {shipping_address.address_line2}, {shipping_address.city}, {shipping_address.state}, {shipping_address.pin_code}'
+            response_data = {
+                'success': True,
+                'details': f'<p>Name: {shipping_address.name}</p><p>Email: {shipping_address.email}</p><p>Address: {concatenated_address}</p>'
+            }
+        else:
+            field_errors = {field_name: [str(error) for error in error_list] for field_name, error_list in form.errors.items()}
+            response_data = {'success': False, 'errors': field_errors}
+        
+        return JsonResponse(response_data)
     else:
-        form = CheckoutForm()
-    context = {
-        'form': form,
-    }
-    return render(request, 'customer/checkout.html', context)
+        return HttpResponseBadRequest('Invalid request method')
+
+
+# checkout and place order
+def checkout(request):
+    cart = get_object_or_404(Cart, user=request.user)
+    
+    if not cart:
+        messages.error(request, 'Your cart is empty.')
+        return redirect('cart')
+    
+    cart_items = cart.items()
+    order = None  # Initialize order as None
+
+    if cart_items:
+        # Check if an order already exists for this cart
+        existing_order = Order.objects.filter(user=request.user, is_order_placed=False).first()
+        
+        if existing_order:
+            order = existing_order
+        else:
+            # Create a new order if no existing order is found
+            order = Order.objects.create(
+                user=request.user, total=cart.total, discount_amount=cart.discount_amount, coupon_use=cart.coupon_use, is_order_placed=False)
+    try:
+        shipping_address = ShippingAddress.objects.get(order=order, user=request.user)
+    except:
+        shipping_address = None
+
+    form = ShippingAddressForm(instance=shipping_address)
+
+    return render(request, 'customer/checkout.html', context={'order': order, 'form': form, 'order_items': cart_items})
+
+
+# update the order status if payment is successful
+def update_order_status(request):
+    import pdb; pdb.set_trace()
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        order = get_object_or_404(Order, id=order_id)
+
+        if not order.is_order_placed:
+            order.is_order_placed = True
+            order.save()
+            cart = get_object_or_404(Cart, user=request.user)
+            # Create order items if the order is placed successfully
+            cart_items = cart.items()
+            print(cart_items)
+            for cart_item in cart.items():
+                order_item, _ = OrderItem.objects.get_or_create(
+                    order=order, product=cart_item.product, quantity=cart_item.quantity, price=cart_item.product.price)
+                print(order_item)
+            # Delete cart items
+            CartItem.objects.filter(cart=cart).delete()
+
+            response_data = {'success': True, 'message': 'Payment captured successfully.'}
+        else:
+            response_data = {'success': False, 'message': 'Payment already captured.'}
+    else:
+        response_data = {'success': False, 'message': 'Invalid request method.'}
+
+    return JsonResponse(response_data)
 
 
 #order history of user
