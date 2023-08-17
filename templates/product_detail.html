@@ -26,18 +26,21 @@
             <p><strong>Storage:</strong> {{ detail_product.storage }}</p>
             {%endif%}
             <p><strong>Color:</strong> {{ detail_product.color }}</p>
-            {%if user == "Admin" %}
-            <a href="{% url 'edit_product' detail_product.product.id %}" class="text-decoration-none me-3">
-                <button class="btn btn-dark">Edit Product</button>
-            </a>
-            <a href="{% url 'delete_product' detail_product.product.id %}" class="text-decoration-none">
-                <button class="btn btn-danger">Delete Product</button>
-            </a>
-            {%else%}
-            <a href="{% url 'add_to_cart' detail_product.product.id%}" class="text-decoration-none">
-                <button class="btn btn-dark">Add to Cart</button>
-            </a>
-            {% endif %}
+            <div class="'bottom-btn-bar" style="margin-bottom:100px;">
+                {%if user == "Admin" %}
+                <a href="{% url 'edit_product' detail_product.product.id %}" class="text-decoration-none me-3">
+                    <button class="btn btn-dark">Edit Product</button>
+                </a>
+                <a href="{% url 'delete_product' detail_product.product.id %}" class="text-decoration-none">
+                    <button class="btn btn-danger">Delete Product</button>
+                </a>
+                {%else%}
+                <a href="{% url 'add_to_cart' detail_product.product.id%}" class="text-decoration-none">
+                    <button class="btn btn-dark">Add to Cart</button>
+                </a>
+                {% endif %}
+            </div>
+           
         </div>
     </div>
 

@@ -13,12 +13,10 @@
   <body>
     <nav class="navbar navbar-expand-lg bg-dark" data-bs-theme="dark">
       <div class="container-fluid">
-        <a class="navbar-brand" hre0f="/home/">BuyTech</a>
+        <a class="navbar-brand" href="/">BuyTech</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <!-- <span class="navbar-toggler-icon"></span> -->
           <i class="fas fa-bars"></i>
-          <i></i>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -59,15 +57,16 @@
     </nav>
 
     {%block body%} {%endblock body%}
-    <!-- <footer class="bg-dark text-light fixed-bottom">
+    <footer class="bg-dark text-light fixed-bottom">
       <div
         class="text-center p-3"
         style="background-color: rgba(0, 0, 0, 0.05)">
         © 2023 Copyright:
-        <a class="text-reset fw-bold" href="/home/">www.buytech.com</a>
+        <a class="text-reset fw-bold" href="/">www.buytech.com</a>
       </div>
-    </footer> -->
+    </footer>
     <script src="{% static 'js/jquery-3.2.1.slim.min.js'%}"></script>
+    <script src="{% static 'js/jquery.min.js'%}"></script>
     <script src="{% static 'js/popper.min.js'%}"></script>
     <script src="{% static 'js/bootstrap.min.js'%}"></script>
   </body>

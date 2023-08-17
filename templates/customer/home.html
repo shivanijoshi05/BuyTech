@@ -15,51 +15,52 @@
 
 <section style="display: flex; flex-direction: row; flex-wrap: wrap ;">
     {% for product in products %}
-    <div class="card" style="width: 18rem; margin:10px;">
-
-        <div class="bg-image hover-overlay ripple ripple-surface ripple-surface-light" data-mdb-ripple-color="light">
-            <div class="card-img-container mt-2" style=" display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;"><img src="{{ product.image.url }}" class="card-img-top mx-auto img-fluid"
-                    style="border-top-left-radius: 15px; border-top-right-radius: 15px; width:200px; height:200px;">
-                <a href="#!">
-                    <div class="mask"></div>
-                </a>
+    <a href="{% url 'detail_product_view' product.id %}" class="text-decoration-none">
+        <div class="card" style="width: 18rem; margin:20px;">
+        
+            <div class="bg-image hover-overlay ripple ripple-surface ripple-surface-light" data-mdb-ripple-color="light">
+                <div class="card-img-container mt-2" style=" display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 200px;"><img src="{{ product.image.url }}" class="card-img-top mx-auto img-fluid"
+                        style="border-top-left-radius: 15px; border-top-right-radius: 15px; width:200px; height:200px;">
+                    <a href="#!">
+                        <div class="mask"></div>
+                    </a>
+                </div>
+        
             </div>
-
-        </div>
-        <div class="card-body py-0">
-            <div class="text-center">
-                <div>
-                    <p class="text-dark my-0">{{product.name}}</p>
-                    <p class="small text-muted">{{product.category}}</p>
+            <div class="card-body py-0">
+                <div class="text-center">
+                    <div>
+                        <p class="text-dark my-0">{{product.name}}</p>
+                        <p class="small text-muted">{{product.category}}</p>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-0" />
+            <div class="card-body py-0">
+                <div class="d-flex justify-content-between align-items-center py-2">
+                    <p class="text-dark text-decoration-none mb-0">Price</p>
+                    <p class="text-dark text-decoration-none mb-0">₹{{product.price}}</p>
+                </div>
+            </div>
+            <hr class="my-0" />
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center pb-2 mb-1">
+                    <a href="{% url 'detail_product_view' product.id %}" class="text-decoration-none text-dark"><button
+                            class="btn btn-outline-dark">View</button></a>
+                    <a href="{% url 'add_to_cart' product.id %}" class="text-decoration-none">
+                        <button class="btn btn-outline-dark">Add to Cart</button>
+                    </a>
                 </div>
             </div>
         </div>
-        <hr class="my-0" />
-        <div class="card-body py-0">
-            <div class="d-flex justify-content-between align-items-center py-2">
-                <a href="#!" class="text-dark text-decoration-none">Price</a>
-                <a href="#!" class="text-dark text-decoration-none">₹{{product.price}}</a>
-            </div>
-        </div>
-        <hr class="my-0" />
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center pb-2 mb-1">
-                <a href="{% url 'detail_product_view' product.id %}" class="text-decoration-none text-dark"><button class="btn btn-outline-dark">View</button></a>
-                <a href="{% url 'add_to_cart' product.id %}" class="text-decoration-none">
-                    <button class="btn btn-outline-dark">Add to Cart</button>
-                </a>
-            </div>
-        </div>
-    </div>
-    </div>
+    </a>
     {% endfor %}
 </section>
 <style>
     section {
-        justify-content: space-between;
         margin: 20px;
     }
 

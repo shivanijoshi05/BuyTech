@@ -107,10 +107,11 @@ $(document).on('click', '.decrease-btn', function() {
                     </div>
                   </div>
                 </div>
+                {%endfor%}
               </div>
 
             </div>
-            {%endfor%}
+            
 
 
             {%if cart.total > 0 and not cart.coupon_use%}
