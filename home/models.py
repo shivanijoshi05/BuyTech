@@ -100,6 +100,7 @@ class Contact(models.Model):
     """
     Model for storing contact form details.
     """
+    user =  models.ForeignKey(CustomUser,  on_delete=models.CASCADE,default=None)
     name = models.CharField(max_length=20)
     email = models.EmailField()
     phone = models.CharField(max_length=10)
@@ -349,23 +350,14 @@ class Order(models.Model):
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     coupon_use = models.ForeignKey(
         CouponUse, on_delete=models.SET_NULL, null=True, blank=True)
-    is_order_placed =  models.BooleanField(default=False)
+    billing_address = models.CharField(max_length=150, default='')
+    shipping_address = models.CharField(max_length=150, default='')
     
     def __str__(self):
         return f"Order {self.id}"
      
     def placeOrder(self):
         self.save()
-
-@receiver(post_save, sender=Cart)
-def update_order_on_cart_change(sender, instance, **kwargs):
-    order = Order.objects.filter(user=instance.user, is_order_placed=False).first()
-    if order:
-        order.total = instance.total
-        order.discount_amount = instance.discount_amount
-        order.coupon_use = instance.coupon_use
-        order.save()
-
 
 # to store the order item details 
 class OrderItem(models.Model):
@@ -389,8 +381,7 @@ class ShippingAddress(models.Model):
     """
     A ShippingAddress model represents a shipping address of an order.
     """
-    order = models.ForeignKey(
-        Order, on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     user =  models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
     email = models.EmailField('email')
@@ -402,6 +393,6 @@ class ShippingAddress(models.Model):
     country = models.CharField(max_length=60)
     
     def __str__(self):
-        return f"Shipping Address of {self.user.username} for order - {self.order.id}"
+        return f"Shipping Address of {self.user.username} for order - {self.cart.id}"
     
     
