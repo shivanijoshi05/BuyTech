@@ -24,60 +24,70 @@
             <div class="row">
 
               <div class="col">
-                <h5 class="mb-3"><a href="/" class="text-body"><i
-                      class="fas fa-long-arrow-alt-left me-2"></i>Continue
-                    shopping</a></h5>
-                <hr>
-
                 <div class="d-flex justify-content-between align-items-center mb-4">
                   <div>
-                    <p class="mb-1">Order History</p>
+                    <h5 class="mb-1">Order Id: {{order.id}}</h5>
                     <p class="mb-0">You have {{order_items|length}} items in your order</p>
                   </div>
                 </div>
                 {%for item in order_items %}
-                <div class="card mb-3">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                      <div class="d-flex flex-row align-items-center">
-                        <div>
-                          <img src="{{ item.product.image.url}}" class="img-fluid rounded-3" alt="Shopping item"
-                            style="width: 65px;">
+                  <div class="card mb-3">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between">
+                        <div class="d-flex flex-row align-items-center">
+                          <div>
+                            <img src="{{ item.product.image.url}}" class="img-fluid rounded-3" alt="Shopping item"
+                              style="width: 65px;">
+                          </div>
+                          <div class="ms-3">
+                            <h5>{{item.product.name}}</h5>
+                            <p class="small mb-0">{{item.product.description}}</p>
+                          </div>
                         </div>
-                        <div class="ms-3">
-                          <h5>{{item.product.name}}</h5>
-                          <p class="small mb-0">{{item.product.description}}</p>
+                        <div class="d-flex flex-row align-items-center">
+                          ✕ 
+                          <h5 class="fw-normal mb-0"> {{item.quantity}}</h5>
+
                         </div>
-                      </div>
-                      <div class="d-flex flex-row align-items-center">
 
-                        <h5 class="fw-normal mb-0">{{item.quantity}}</h5>
 
                       </div>
-
-
                     </div>
                   </div>
+                {%endfor%}
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div>
+                    <h6 class="mb-1">Shipping Address:</h6>
+                    <p class="mb-0">{{order.shipping_address}}</p>
+                  </div>
+              
                 </div>
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                      <h6 class="mb-1">Billing Address:</h6>
+                       <p class="mb-0">{{order.billing_address}}</p>
+                    </div>
+                    
+                  </div>
               </div>
 
             </div>
-            {%endfor%}
+            
 
             <hr class="my-4">
 
             <div class="d-flex justify-content-between">
               <p class="mb-2">Total Price</p>
-              <p class="mb-2">₹{{order.total}}</p>
+              <p class="mb-2">$ {{order.total}}</p>
             </div>
            <div class="d-flex justify-content-between">
                     <p class="mb-2">Coupon Discount </p>
-                    <p class="mb-2"> -₹{{order.coupon_use.coupon.discount}}</p>
+                    <p class="mb-2"> -$ {%if cart.coupon_use %} {{cart.coupon_use.coupon.discount}} {%else%} {{0.00}} {%endif%}</p>
                 </div>
                  <hr class="my-2">
                 <div class="d-flex justify-content-between">
                     <p class="mb-2">Total Amount </p>
-                    <p class="mb-2">₹{{order.discount_amount}}</p>
+                    <p class="mb-2">$ {{order.discount_amount}}</p>
                 </div>
           </div>
         </div>

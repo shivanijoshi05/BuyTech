@@ -13,74 +13,68 @@
     <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
     
   </head>
-  <body>
-     <section class="h-100" style="background-color:antiquewhite">
-      <div class="container-fluid py-2 h-100">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-          <div class="col col-xl-10">
-            <div class="card" style="border-radius: 1rem;">
-              <div class="row g-0">
-                <div class="col-md-8 col-lg-6 d-none d-md-block">
-                  <img
-                     src="{% static 'images/buytech_bg.jpg'%}"
-                    alt="BuyTech" class="img-fluid h-100" style="border-radius:
-                    1rem 0 0 1rem;" />
-                </div>
-                <div class="col-md-4 col-lg-6 d-flex align-items-center">
-                  <div class="card-body p-4 p-lg-5 text-black">
+  <body style="background-color:antiquewhite">
+    <div class="row d-flex justify-content-center align-items-center mx-3 my-5">
+      <div class="col col-xl-10">
+        <div class="card" style="border-radius: 1rem; height:700px;">
+          <div class="row g-0">
+            <div class="col-md-8 col-lg-6 d-none d-md-block">
+              <img
+                  src="{% static 'images/buytech_bg.jpg'%}"
+                alt="BuyTech" class="img-fluid" style="border-radius:
+                1rem 0 0 1rem;height:700px;" />
+            </div>
+            <div class="col-md-4 col-lg-6 d-flex align-items-center">
+              <div class="card-body px-4 px-lg-5 py-2 text-black">
 
-                    <div class="d-flex align-items-center mb-3 pb-1">
-                      <i class="fas fa-cubes fa-2x" style="color:
-                        #ff6219;"></i>
-                      <span class="h1 fw-bold mb-0">BuyTech</span>
+                <div class="d-flex align-items-center mb-3 pb-1">
+                  <i class="fas fa-cubes fa-2x" style="color:
+                    #ff6219;"></i>
+                  <span class="h1 fw-bold mb-0">BuyTech</span>
+                </div>
+
+                <h5 class="fw-normal mb-0" style="letter-spacing:
+                  1px;">Sign Up</h5>
+                <form method="POST">
+                  {% csrf_token %} {% for field in form %}
+                  <div class="d-flex flex-row align-items-center mb-2">
+                    <div class="form-outline flex-fill mb-0">
+                      <label class="form-label">{{field.label}} </label>
+                      <div class="controls">
+                        {{ field }}
+                        <span class="help-inline">
+                          {% for error in field.errors %}<small
+                            style="color: red"
+                            >{{ error }}</small
+                          ><br />{% endfor %}
+                        </span>
+                      </div>
                     </div>
-
-                    <h5 class="fw-normal mb-2" style="letter-spacing:
-                      1px;">Sign Up</h5>
-                   <form method="POST">
-                      {% csrf_token %} {% for field in form %}
-                      <div class="d-flex flex-row align-items-center mb-3">
-                        <div class="form-outline flex-fill mb-0">
-                          <label class="form-label">{{field.label}} </label>
-                          <div class="controls">
-                            {{ field }}
-                            <span class="help-inline">
-                              {% for error in field.errors %}<small
-                                style="color: red"
-                                >{{ error }}</small
-                              ><br />{% endfor %}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      {% endfor %}
-                      <div>
-                        {% for message in messages %}
-                        <small style="color: red">{{ message }}</small><br />
-                        {% endfor %}
-                      </div>
-                      <div
-                        class="d-flex mb-2">
-                        <button type="submit" class="btn btn-dark btn-lg">
-                          Sign Up
-                        </button>
-                      </div>
-                    </form>
-
-
-                    <p class="mb-2" style="color: #393f81;">Already have
-                      an account? <a href="/login/"
-                        style="color: #393f81;">LogIn here</a></p>
-                    <a href="#!" class="small text-muted">Terms of use.</a>
-                    <a href="#!" class="small text-muted">Privacy policy</a>
                   </div>
-                </div>
+                  {% endfor %}
+                  <div>
+                    {% for message in messages %}
+                    <small style="color: red">{{ message }}</small><br />
+                    {% endfor %}
+                  </div>
+                  <div
+                    class="d-flex my-3">
+                    <button type="submit" class="btn btn-dark btn-lg">
+                      Sign Up
+                    </button>
+                  </div>
+                </form>
+
+
+                <p class="mb-2" style="color: #393f81;">Already have
+                  an account? <a href="/login/"
+                    style="color: #393f81;">LogIn here</a></p>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
     <script
       src="{% static 'js/jquery-3.2.1.slim.min.js'%}"></script>
       <script src="{% static 'js/jquery.min.js'%}"></script>

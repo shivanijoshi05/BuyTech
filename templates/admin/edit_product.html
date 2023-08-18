@@ -5,7 +5,7 @@
 
 {%block body%}
 <h2 class="text-center my-3"> Edit Product </h2>
-<form class="row d-flex justify-content-center" method="POST" enctype="multipart/form-data">
+<form class="row d-flex justify-content-center mx-0" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="col-8">
         {% for field in form %}
@@ -29,7 +29,7 @@
         <br />
         {% endfor %}
     </div>
-    <div class="col-8" style="margin-bottom: 100px;">
+    <div class="col-8">
         <button type="submit" class="btn btn-dark">Edit Product</button>
     </div>
 </form>

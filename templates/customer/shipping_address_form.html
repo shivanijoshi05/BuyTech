@@ -6,7 +6,7 @@
         <label class="form-label">{{ field.label }}</label>
         <div class="controls">
             {{ field }}
-            <span class="help-inline error-message" id="{{ field.name }}-error">
+            <span class="help-inline error-message" id="id_{{ field.name }}_error">
             </span>
         </div>
     </div>
@@ -15,7 +15,10 @@
         <label class="form-label">{{ field.label }}</label>
         <div class="controls">
             {{ field }}
-            <span class="help-inline error-message" id="{{ field.name }}-error">
+            <span class="help-inline error-message" id="id_{{ field.name }}_error">
+                {% for error in field.errors %}
+                 <small style="color: red">{{ error }}</small><br />
+                {% endfor%}
             </span>
         </div>
     </div>
@@ -26,7 +29,7 @@
         <label class="form-label">{{ field.label }}</label>
         <div class="controls">
             {{ field }}
-            <span class="help-inline error-message" id="{{ field.name }}-error">
+            <span class="help-inline error-message" id="id_{{ field.name }}_error">
             </span>
         </div>
     </div>

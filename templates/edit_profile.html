@@ -3,7 +3,7 @@
 {%block title%} {{user.username}} {%endblock title%}
 {% block body %}
 <h2 class="text-center my-3"> Edit Profile </h2>
-<form class="row justify-content-center" method="POST" enctype="multipart/form-data">
+<form class="row justify-content-center mx-0" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="col-6">
         {% for field in form %}

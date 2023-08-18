@@ -13,20 +13,20 @@
                     style="height: 300px;">
             <p><strong>Description:</strong> <br />{{ detail_product.product.description }}</p>
 
-            <p><strong>Price:</strong> {{ detail_product.product.price }}</p>
+            <p><strong>Price:</strong> $ {{ detail_product.product.price }}</p>
             <p><strong>Brand:</strong> {{ detail_product.brand }}</p>
-            <p><strong>Screen Size:</strong> {{ detail_product.screen_size }}</p>
+            <p><strong>Screen Size:</strong> {{ detail_product.screen_size }} inches</p>
             {%if detail_product.product.category == "Mobile" %}
             <p><strong>Os:</strong> {{detail_product.os }}</p>
             <p><strong>battery:</strong> {{ detail_product.battery }}</p>
             {%endif%}
             {%if detail_product.product.category == "Laptop" %}
             <p><strong>Processor:</strong> {{detail_product.processor }}</p>
-            <p><strong>RAM:</strong> {{ detail_product.ram }}</p>
-            <p><strong>Storage:</strong> {{ detail_product.storage }}</p>
+            <p><strong>RAM:</strong> {{ detail_product.ram }} GB</p>
+            <p><strong>Storage:</strong> {{ detail_product.storage }} TB</p>
             {%endif%}
             <p><strong>Color:</strong> {{ detail_product.color }}</p>
-            <div class="'bottom-btn-bar" style="margin-bottom:100px;">
+            <div class="'bottom-btn-bar">
                 {%if user == "Admin" %}
                 <a href="{% url 'edit_product' detail_product.product.id %}" class="text-decoration-none me-3">
                     <button class="btn btn-dark">Edit Product</button>
