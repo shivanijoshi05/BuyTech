@@ -139,9 +139,9 @@ def update_order_status(request):
         if cart and cart.items():
             # Create order and order items if the order is placed successfully
             shipping_address = get_object_or_404(ShippingAddress,user=request.user, cart=cart)
-            if not billing_address:
-                billing_address=shipping_address
             concatenated_address = f'{shipping_address.address_line1}, {shipping_address.address_line2}, {shipping_address.city}, {shipping_address.state}, {shipping_address.pin_code}'
+            if not billing_address:
+                billing_address=concatenated_address
             order = Order.objects.create(user=request.user, total=cart.total, discount_amount=cart.discount_amount, coupon_use=cart.coupon_use, billing_address=billing_address ,shipping_address=concatenated_address)
     
             for cart_item in cart.items():

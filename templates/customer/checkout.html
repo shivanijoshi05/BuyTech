@@ -125,21 +125,22 @@
             },
             onApprove: function (data, actions) {
                 return actions.order.capture().then(function (orderData) {
-                    const payerInfo = orderData.payer;
-                    const billingAddress = payerInfo.address;
+                    
+                
                     $.ajax({
                         type: 'POST',
                         url: '/update_order_status/',  // Replace with the actual URL
                         data: {
                             cart_id: '{{cart.id}}',
-                            billing_address: billingAddress,
+                            billing_address: null,
                         },
                         headers: {
                             'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
                         },
                         success: function (response) {
                             if (response.success) {
-                                 window.location.href = '/your_orders/';
+                                // window.location.href = '/your_orders/';
+                                console.log('Order placed');
                             } else {
                                 console.log('Failed to update order status.',message);
                             }
