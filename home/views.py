@@ -106,94 +106,53 @@ def apply_coupon(request,code):
       messages.error(request, 'Invalid coupon code.')
   return redirect('cart')
 
-# to save or edit the shipping address
-def save_shipping_address(request):
-    if request.method == 'POST':
-        order_id = request.POST.get('order_id')
-        form_data = request.POST.get('form_data')
 
-        if not order_id or not form_data:
-            return JsonResponse({'success': False, 'message': 'Missing order ID or form data'})
-
-        order = get_object_or_404(Order, id=order_id)
-        form_data_dict = QueryDict(form_data).dict()
-        shipping_address, _ = ShippingAddress.objects.get_or_create(order=order, user=request.user)
-
-        form = ShippingAddressForm(form_data_dict,instance=shipping_address)
-        if form.is_valid():
-            shipping_address.user = request.user
-            shipping_address.order = order
-            shipping_address.save()
-
-            concatenated_address = f'{shipping_address.address_line1}, {shipping_address.address_line2}, {shipping_address.city}, {shipping_address.state}, {shipping_address.pin_code}'
-            response_data = {
-                'success': True,
-                'details': f'<p>Name: {shipping_address.name}</p><p>Email: {shipping_address.email}</p><p>Address: {concatenated_address}</p>'
-            }
-        else:
-            field_errors = {field_name: [str(error) for error in error_list] for field_name, error_list in form.errors.items()}
-            response_data = {'success': False, 'errors': field_errors}
-        
-        return JsonResponse(response_data)
-    else:
-        return HttpResponseBadRequest('Invalid request method')
-
-
-# checkout and place order
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
-    
-    if not cart:
-        messages.error(request, 'Your cart is empty.')
-        return redirect('cart')
-    
+    shipping_address = ShippingAddress.objects.filter(cart=cart, user=request.user).first()
+    if request.method == 'POST':
+        form = ShippingAddressForm(request.POST, instance=shipping_address)
+        if form.is_valid():
+            shipping_address = form.save(commit=False)
+            shipping_address.user = request.user
+            shipping_address.cart = cart
+            shipping_address.save()
+            form = ShippingAddressForm(instance=shipping_address)  # Update form with saved data
+    else:
+        form = ShippingAddressForm()
+
     cart_items = cart.items()
-    order = None  # Initialize order as None
 
-    if cart_items:
-        # Check if an order already exists for this cart
-        existing_order = Order.objects.filter(user=request.user, is_order_placed=False).first()
-        
-        if existing_order:
-            order = existing_order
-        else:
-            # Create a new order if no existing order is found
-            order = Order.objects.create(
-                user=request.user, total=cart.total, discount_amount=cart.discount_amount, coupon_use=cart.coupon_use, is_order_placed=False)
-    try:
-        shipping_address = ShippingAddress.objects.get(order=order, user=request.user)
-    except:
-        shipping_address = None
-
-    form = ShippingAddressForm(instance=shipping_address)
-
-    return render(request, 'customer/checkout.html', context={'order': order, 'form': form, 'order_items': cart_items})
-
+    return render(request, 'customer/checkout.html', context={
+        'cart': cart,
+        'form': form,
+        'cart_items': cart_items,
+        'shipping_address': shipping_address,
+    })
 
 # update the order status if payment is successful
 def update_order_status(request):
-    import pdb; pdb.set_trace()
     if request.method == 'POST':
-        order_id = request.POST.get('order_id')
-        order = get_object_or_404(Order, id=order_id)
-
-        if not order.is_order_placed:
-            order.is_order_placed = True
-            order.save()
-            cart = get_object_or_404(Cart, user=request.user)
-            # Create order items if the order is placed successfully
-            cart_items = cart.items()
-            print(cart_items)
+        cart_id = request.POST.get('cart_id')
+        billing_address = request.POST.get('billing_address')
+        cart = get_object_or_404(Cart, pk=cart_id)
+        if cart and cart.items():
+            # Create order and order items if the order is placed successfully
+            shipping_address = get_object_or_404(ShippingAddress,user=request.user, cart=cart)
+            if not billing_address:
+                billing_address=shipping_address
+            concatenated_address = f'{shipping_address.address_line1}, {shipping_address.address_line2}, {shipping_address.city}, {shipping_address.state}, {shipping_address.pin_code}'
+            order = Order.objects.create(user=request.user, total=cart.total, discount_amount=cart.discount_amount, coupon_use=cart.coupon_use, billing_address=billing_address ,shipping_address=concatenated_address)
+    
             for cart_item in cart.items():
                 order_item, _ = OrderItem.objects.get_or_create(
                     order=order, product=cart_item.product, quantity=cart_item.quantity, price=cart_item.product.price)
-                print(order_item)
             # Delete cart items
             CartItem.objects.filter(cart=cart).delete()
 
-            response_data = {'success': True, 'message': 'Payment captured successfully.'}
+            response_data = {'success': True, 'message': 'Order Placed successfully.'}
         else:
-            response_data = {'success': False, 'message': 'Payment already captured.'}
+            response_data = {'success': False, 'message': 'Cart is empty.'}
     else:
         response_data = {'success': False, 'message': 'Invalid request method.'}
 
@@ -205,7 +164,7 @@ def update_order_status(request):
 def customer_orders(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     context = {
-        'orders': orders
+        'orders': orders,
     }
     return render(request, 'customer/your_orders.html', context)
 
@@ -230,7 +189,7 @@ def contact(request):
         email = request.POST['email']
         phone = request.POST['phone']
         msg = request.POST['msg']
-        contact = Contact(name=name, email=email, phone=phone, msg=msg)
+        contact = Contact(user=request.user,name=name, email=email, phone=phone, msg=msg)
         contact.save()
     return render(request, 'customer/contact.html')
 
@@ -250,17 +209,14 @@ def add_products(request):
     category = request.POST.get('category-input')
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
-        print(form)
         if form.is_valid():
             product = form.save(commit=False)
             product.product_admin = request.user
             product.category = category
             product.save()
 
-            print(product)
             if category == 'Mobile':
                 detail_form = MobileForm(request.POST)
-                print(detail_form)
             elif category == 'Laptop':
                 detail_form = LaptopForm(request.POST)
             if detail_form.is_valid():

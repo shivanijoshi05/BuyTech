@@ -4,23 +4,31 @@
 
 {%block body%}
 <h2 class="text-center my-3"> Checkout </h2>
-<div class="row  justify-content-center">
+<div class="row  justify-content-center mx-0">
     <div class="col-5">
         <div id="shipping-address">
             <h3>Shipping Address</h3>
-            <div id="shipping-details" style="display: none;">
-
+            <div id="shipping-details">
+                {% if shipping_address %}
+                <p>Name: {{ shipping_address.name }}</p>
+                <p>Email: {{ shipping_address.email }}</p>
+                <p>Address: {{ shipping_address.address_line1 }}, {{ shipping_address.address_line2 }},
+                    {{shipping_address.city }}, {{ shipping_address.state }}, {{ shipping_address.pin_code }}</p>
+                {% endif %}
             </div>
             <form method="POST" enctype="multipart/form-data" id="form-address">
                 {% csrf_token %}
-                <div id="shipping-address-form">
+                <div id="shipping-address-form" {% if shipping_address %} style="display: none;" {% endif %}>
                     {% with form=form %}
                     {% include 'customer/shipping_address_form.html' %}
                     {% endwith %}
                 </div>
-                <button type="submit" class="btn btn-dark my-2" id="save-address">Save</button>
+                <div id="shipping-address-error"></div>
+                <button type="button" class="btn btn-dark my-2" id="save-address">
+                    {% if shipping_address %} Edit {% else %} Save {% endif %}
+                </button>
             </form>
-            <div id="shipping-address-error" style="color:red;"></div>
+            <div id="shipping-address-error" ></div>
         </div>
     </div>
     <div class="col-5">
@@ -32,10 +40,10 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
                                         <h5 class="mb-1">Order Summary</h5>
-                                        <p class="mb-0 pb-0">You have {{order_items|length}} items in your orders</p>
+                                        <p class="mb-0 pb-0">You have {{cart_items|length}} items in your orders</p>
                                     </div>
                                 </div>
-                                {%for item in order_items %}
+                                {%for item in cart_items %}
                                 <div class="card mb-2">
                                     <div class="card-body px-2 py-1">
                                         <div class="d-flex justify-content-between">
@@ -57,46 +65,40 @@
                                     </div>
                                 </div>
                                 {%endfor%}
-                                {%if order.total > 0 %}
+                                {%if cart.total > 0 %}
                                 <hr class="my-2">
                                 <div class="d-flex justify-content-between">
                                     <p class="mb-2">Total MRP</p>
-                                    <p class="mb-2">₹{{order.total}}</p>
+                                    <p class="mb-2">$ {{cart.total}}</p>
                                 </div>
                                 
                                 <div class="d-flex justify-content-between">
                                     <p class="mb-2">Coupon Discount </p>
-                                    <p class="mb-2"> -₹ {{order.coupon_use.coupon.discount}}</p>
+                                    <p class="mb-2"> - $ {%if cart.coupon_use %} {{cart.coupon_use.coupon.discount}} {%else%} {{0.00}} {%endif%}</p>
                                 </div>
-                                
                                 <hr class="my-2">
                                 <div class="d-flex justify-content-between">
                                     <p class="mb-2">Total Amount </p>
-                                    <p class="mb-2">₹{{order.discount_amount}}</p>
+                                    <p class="mb-2">$ {{cart.discount_amount}}</p>
                                 </div>
                                 {%endif%}
                             </div>
                             
                         </div>
-                      
-
-                        
                     </div>
-
                 </div>
             </div>
             <div id="paypal-button-container"></div>
     </div>
 </div>
 </div>
-<!-- Include the PayPal JavaScript SDK -->
+
 <script src="https://www.paypal.com/sdk/js?client-id=AS21f5hSDx6Rav8nmlB56BzxlJ90Zd5MuWnm1hCF0Tv2AcBwpjpFxvJSEVFGcOKSFPqmkL15Mo2yIPsG&currency=USD"></script>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
     function initPayPalButton() {
         $('#shipping-address-error').empty();
+        
         paypal.Buttons({
             style: {
                 shape: 'rect',
@@ -107,36 +109,37 @@
 
             createOrder: function (data, actions) {
                 var isFormFilled = $('#shipping-details').is(':visible');
-                console.log(isFormFilled);
                 if (isFormFilled) {
                     return actions.order.create({
-                        purchase_units: [{ "amount": { "currency_code": "USD", "value": '{{order.total}}' } }],
+                        purchase_units: [{ "amount": { "currency_code": "USD", "value": '{{cart.total}}' } }],
                         application_context: {
                             shipping_preference: 'NO_SHIPPING'
                         },
                     });
                 }
                 else{
-                    $('#shipping-address-error').html('<p>Please save the address.<p>');
+                    $('#shipping-address-error').html('<p style="color:red;">Please save the address.<p>');
+                    return false;
                 }
                 
             },
-
-           onApprove: function (data, actions) {
+            onApprove: function (data, actions) {
                 return actions.order.capture().then(function (orderData) {
+                    const payerInfo = orderData.payer;
+                    const billingAddress = payerInfo.address;
                     $.ajax({
                         type: 'POST',
                         url: '/update_order_status/',  // Replace with the actual URL
                         data: {
-                            order_id: '{{order.id}}',
+                            cart_id: '{{cart.id}}',
+                            billing_address: billingAddress,
                         },
                         headers: {
                             'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
                         },
                         success: function (response) {
                             if (response.success) {
-                                console.log('Done.....')
-                                window.location.href = '/your_orders/';  // Replace with the actual URL
+                                 window.location.href = '/your_orders/';
                             } else {
                                 console.log('Failed to update order status.',message);
                             }
@@ -147,15 +150,17 @@
                     });
                 });
             },
-
             onError: function (err) {
-                console.log(err)
-                $('#shipping-address-error').html('Payment failed! Try again');
-
+                var isFormFilled = $('#shipping-details').is(':visible');
+                if(!isFormFilled){
+                    $('#shipping-address-error').html('<p style="color:red;">Please save the address.<p>');
+                }
+                else{
+                    $('#shipping-address-error').html('<p style="color:red;">Payment Failed. Please try again!<p>');
+                }
             },
             onCancel: function (data) {
-                // Handle payment cancellation
-                 $('#shipping-address-error').html('Payment Canceled! Try again');
+                $('#shipping-address-error').html('<p style="color:red;">Payment canceled. Please try again!<p>');
             }
 
 
@@ -163,14 +168,9 @@
     }
     initPayPalButton();
 </script>
-
 <script>
     $(document).ready(function () {
-        $('#id_pin_code').on('input', function () {
-            var pinCode = $(this).val();
-            getAddressDataFromPinCode(pinCode);
-        });
-
+       
         function getAddressDataFromPinCode(pinCode) {
             var apiUrl = 'https://api.zippopotam.us/in/' + pinCode;
 
@@ -180,7 +180,6 @@
                 success: function (data) {
                     if (data && data.places && data.places[0]) {
                         var place = data.places[0];
-                        console.log(place['place name'])
                         $('#id_state').val(place['state']);
                         $('#id_country').val(data['country']);
                     }
@@ -189,54 +188,88 @@
                     console.log('Error fetching address data:', error);
                 }
             });
-            }
-         });
+        }
 
-        const $form = $('#form-address');
-        var $saveEditButton = $('#save-address');
-        var $shippingDetails = $('#shipping-details');
-        var orderId = '{{order.id}}';
+        $('#id_pin_code').on('input', function () {
+            var pinCode = $(this).val();
+            getAddressDataFromPinCode(pinCode);
+        });
+        
+        // Client side validations
+        $('#form-address input').on('blur', function () {
+            $('.error-message').empty();
+            return validateField($(this));
+        });
 
-        $saveEditButton.click(function () {
-            event.preventDefault();
-            $('#shipping-address-error').empty();
-            var formData = $form.serialize();
-           
-            $.ajax({
-                type: 'POST',
-                url: '/save_shipping_address/',  // Replace with the actual URL
-                data: {
-                    order_id: orderId,
-                    form_data: formData
-                },
-                headers: {
-                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
-                },
-                success: function (response) {
-                    if (response.success) {
-                        if ($saveEditButton.text() === 'Edit') {
-                            $('#shipping-address-form').show();
-                            $shippingDetails.hide();
-                            $saveEditButton.text('Save');
-                        } else {
-                            $('#shipping-address-form').hide();
-                            $shippingDetails.html(response.details).show();
-                            $saveEditButton.text('Edit');
-                        }
-                    } else {
-                       $.each(response.errors, function (field, errors) {
-                            const errorContainer = $('#' + field + '-error');
-                            const errorMsgs = errors.join('<br>');
+        // To validate email format
+        function isValidEmail(email) {
+            var emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+            return emailPattern.test(email);
+        }
 
-                            errorContainer.html('<small style="color: red">' + errorMsgs + '</small><br>');
-                        });
-                    }
-                },
-                error: function () {
-                    alert('Failed saving an address');
+        // To validate pin code format
+        function isValidPinCode(pinCode) {
+            var pinCodePattern = /^\d{6}$/;
+            return pinCodePattern.test(pinCode);
+        }
+
+        function validateField(input){
+
+                var id = input.attr('id');
+                if (input.val() === '') {
+                    $('#' + id + '_error').html('<small style="color: red">This field is required!</small>');
+                    return false;
                 }
+                if (input.attr('type') === 'email' && !isValidEmail(input.val())) {
+                    $('#' + id + '_error').html('<small style="color: red">Enter a valid email address</small>');
+                    return false;
+                }
+                // Check pin code format if the field is pin code
+                if (input.attr('name') === 'pin_code' && !isValidPinCode(input.val())) {
+                    $('#' + id + '_error').html('<small style="color: red">Enter a valid pin code</small>');
+                    isValid = false;
+                }
+                return true;
+        }
+
+        $('#save-address').click(function ()  {
+            if ($('#shipping-address-form').is(':visible')) {
+                $('#form-address').submit(); // Submit the form
+            } else {
+                $('#shipping-details').toggle();
+                $('#shipping-address-form').toggle();
+                $(this).text(function (i, text) {
+                    return text === 'Edit' ? 'Save' : 'Edit';
+                });
+            }
+            if ($saveEditButton.text() === 'Edit') {
+                $shippingAddressForm.show();
+                $shippingDetails.hide();
+                $saveEditButton.text('Save');
+            } else {
+                $shippingAddressForm.hide();
+                $shippingDetails.show();
+                $saveEditButton.text('Edit');
+            }
+            
+            $('.error-message').empty(); // Clear existing error messages
+            var isValid = true; // Set isValid to true initially
+
+           $('#form-address input').each(function () {
+                if (!validateField($(this))) {
+                    isValid = false;
+                    return false;
+                }
+                isValid=true;
             });
-        });   
+
+            if (isValid) {
+                // If form is not valid, prevent default behavior and show errors
+                 $('#form-address').submit(); 
+            }
+        });
+    });
+   
 </script>
 
 {%endblock body%}
