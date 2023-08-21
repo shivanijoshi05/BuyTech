@@ -42,6 +42,9 @@
                                         <h5 class="mb-1">Order Summary</h5>
                                         <p class="mb-0 pb-0">You have {{cart_items|length}} items in your orders</p>
                                     </div>
+                                    <div>
+                                        <a class="text-decoration-none text-body" href="/cart/">Edit <i class="fas fa-pen"></i> </a>
+                                    </div>
                                 </div>
                                 {%for item in cart_items %}
                                 <div class="card mb-2">
@@ -58,9 +61,11 @@
                                             </div>
                                             <div class="d-flex flex-row align-items-center">
                                                 <div class="ms-2">
-                                                    <p class="my-0">₹{{item.product.price}}</p>
+                                                    <p class="my-0">Price: ${{item.product.price}}</p>
+                                                    <p class="my-0">Qty: {{item.quantity}}</p>
                                                 </div>
                                             </div>
+                                    
                                         </div>
                                     </div>
                                 </div>
@@ -69,17 +74,17 @@
                                 <hr class="my-2">
                                 <div class="d-flex justify-content-between">
                                     <p class="mb-2">Total MRP</p>
-                                    <p class="mb-2">$ {{cart.total}}</p>
+                                    <p class="mb-2">${{cart.total}}</p>
                                 </div>
                                 
                                 <div class="d-flex justify-content-between">
                                     <p class="mb-2">Coupon Discount </p>
-                                    <p class="mb-2"> - $ {%if cart.coupon_use %} {{cart.coupon_use.coupon.discount}} {%else%} {{0.00}} {%endif%}</p>
+                                    <p class="mb-2"> - ${%if cart.coupon_use %} {{cart.coupon_use.coupon.discount}} {%else%} {{0.00}} {%endif%}</p>
                                 </div>
                                 <hr class="my-2">
                                 <div class="d-flex justify-content-between">
                                     <p class="mb-2">Total Amount </p>
-                                    <p class="mb-2">$ {{cart.discount_amount}}</p>
+                                    <p class="mb-2">${{cart.discount_amount}}</p>
                                 </div>
                                 {%endif%}
                             </div>
@@ -129,7 +134,7 @@
                 
                     $.ajax({
                         type: 'POST',
-                        url: '/update_order_status/',  // Replace with the actual URL
+                        url: '/create_order/',  // Replace with the actual URL
                         data: {
                             cart_id: '{{cart.id}}',
                             billing_address: null,
@@ -139,7 +144,7 @@
                         },
                         success: function (response) {
                             if (response.success) {
-                                // window.location.href = '/your_orders/';
+                                window.location.href = '/your_orders/';
                                 console.log('Order placed');
                             } else {
                                 console.log('Failed to update order status.',message);
@@ -169,6 +174,7 @@
     }
     initPayPalButton();
 </script>
+
 <script>
     $(document).ready(function () {
        

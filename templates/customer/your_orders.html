@@ -53,7 +53,7 @@
                         </div>
                       </div>
 
-                      <a href=" {% url 'view_order' order.id %} " class="text-decoration-none"> 
+                      <a href=" {% url 'detail_order_view' order.id %} " class="text-decoration-none"> 
                         <button type="button" class="btn btn-outline-dark">
                             <span>View Order <i class="fas fa-long-arrow-alt-right ms-2"></i></span>
                         </button>
@@ -64,8 +64,7 @@
               {%endfor%}
             {% else %}
               <p>You have not placed any orders.</p>
-              <h5 class="mb-3"><a href="/" class="text-body">Continue
-                  shopping<i class="fas fa-long-arrow-alt-right mx-2"></i></a></h5>
+              <h5 class="mb-3"><a href="/" class="text-body">Continue shopping<i class="fas fa-long-arrow-alt-right mx-2"></i></a></h5>
             {% endif %}
         
           </div>

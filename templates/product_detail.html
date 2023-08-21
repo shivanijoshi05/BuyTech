@@ -12,7 +12,6 @@
             <p><strong>Product Image:</strong><br /><img src="{{ detail_product.product.image.url }}"
                     style="height: 300px;">
             <p><strong>Description:</strong> <br />{{ detail_product.product.description }}</p>
-
             <p><strong>Price:</strong> $ {{ detail_product.product.price }}</p>
             <p><strong>Brand:</strong> {{ detail_product.brand }}</p>
             <p><strong>Screen Size:</strong> {{ detail_product.screen_size }} inches</p>
@@ -26,8 +25,8 @@
             <p><strong>Storage:</strong> {{ detail_product.storage }} TB</p>
             {%endif%}
             <p><strong>Color:</strong> {{ detail_product.color }}</p>
-            <div class="'bottom-btn-bar">
-                {%if user == "Admin" %}
+            <div class="bottom-btn-bar">
+                {%if request.user.user_type == "Admin" and request.user == detail_product.product.product_admin %}
                 <a href="{% url 'edit_product' detail_product.product.id %}" class="text-decoration-none me-3">
                     <button class="btn btn-dark">Edit Product</button>
                 </a>
