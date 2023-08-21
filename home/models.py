@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.dispatch import receiver
+from django.db import transaction
 
 #user manager to handle custom fields in USER model
 class CustomUserManager(UserManager):
@@ -242,12 +243,31 @@ class Coupon(models.Model):
     usage_limit. 
     """
 
+    DISCOUNT_TYPES = (
+        ('Percentage', 'Percentage'),
+        ('Fixed', 'Fixed Amount'),
+    )
+
     code = models.CharField(max_length=50, unique=True)
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPES, default=DISCOUNT_TYPES[1])
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    usage_limit = models.PositiveIntegerField(blank=True,default=1)
+    usage_limit = models.PositiveIntegerField(blank=True, default=1)
 
     def __str__(self):
         return self.code
+    
+    def calculate_discounted_total(self, total):
+        if self.discount_type == 'Percentage':
+            return (total-((self.discount / 100) * total))
+        else:
+            return (total-self.discount)
+        
+    def calculate_coupon_discount(self,total):
+        if self.discount_type == 'Percentage':
+            return ((self.discount / 100) * total)
+        else:
+            return (self.discount)
+        
     
 
 #to track the coupon usage for each user
@@ -263,7 +283,7 @@ class CouponUse(models.Model):
     used = models.PositiveIntegerField(default=0)
     class Meta:
         unique_together = ('user', 'coupon')
-
+        
 
 #to store cart items 
 class Cart(models.Model):
@@ -288,17 +308,20 @@ class Cart(models.Model):
 
     def apply_coupon(self, coupon):
         if coupon:
-                coupon_use,created = CouponUse.objects.get_or_create(user=self.user, coupon=coupon)
-                if coupon_use.used < coupon.usage_limit:
-                    coupon_use.save()
-                    self.coupon_use = coupon_use
-                    coupon.save()
-                    self.discount_amount = self.total - coupon.discount
-                    self.save()
+            coupon_use, created = CouponUse.objects.get_or_create(user=self.user, coupon=coupon)
+            if coupon_use.used < coupon.usage_limit:
+                try:
+                    with transaction.atomic():
+                        coupon_use.save()
+                        self.coupon_use = coupon_use
+                        self.discount_amount = coupon.calculate_discounted_total(self.total)
+                        self.save()
                     return True
+                except Exception as e:
+                    print("Error saving data:", e)
         return False
 
-    def remove_coupon(self):
+    def save_coupon_use(self):
         coupon_use = self.coupon_use
         if coupon_use:
             coupon_use.used += 1
@@ -311,7 +334,7 @@ class Cart(models.Model):
         self.total = sum(item.get_total() for item in self.items())
         if self.coupon_use:
             if self.total > 0:
-                self.discount_amount = self.total - self.coupon_use.coupon.discount
+                self.discount_amount = self.coupon_use.coupon.calculate_discounted_total(self.total)
                 
             else:
                 self.discount_amount = 0
@@ -319,6 +342,12 @@ class Cart(models.Model):
             self.discount_amount = self.total
         self.save()
         return self.total
+    
+    def get_discount(self):
+        if self.coupon_use:
+            return self.coupon_use.coupon.calculate_coupon_discount(self.total)
+        return 0
+        
 
 
 # to store the cart items details
@@ -375,6 +404,11 @@ class OrderItem(models.Model):
     
     def get_total(self):
         return self.price * self.quantity
+    
+    @staticmethod
+    def calculate_order_items_total(order_items):
+        total = sum(item.get_total() for item in order_items)
+        return total
 
 # to store the shipping address
 class ShippingAddress(models.Model):

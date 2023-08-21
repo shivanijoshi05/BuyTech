@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from home.models import (Cart, CartItem, Contact, Coupon, CustomUser, Laptop,
+from home.models import (Cart, CartItem, Contact, Coupon, CouponUse, CustomUser, Laptop,
                          Mobile, Order, OrderItem, Product, Profile, ShippingAddress)
 
 
@@ -40,6 +40,7 @@ admin.site.register(Profile)
 admin.site.register(Order)
 admin.site.register(Cart)
 admin.site.register(Coupon)
+admin.site.register(CouponUse)
 admin.site.register(CartItem)
 admin.site.register(OrderItem)
 admin.site.register(ShippingAddress)

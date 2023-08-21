@@ -18,12 +18,15 @@ urlpatterns = [
     path('decrease_cart_item_quantity/<int:product_id>/',
          views.decrease_cart_item_quantity, name='decrease_cart_item_quantity'),
     path('apply_coupon/<str:code>/', views.apply_coupon, name='apply_coupon'),
+    path('remove_coupon', views.remove_coupon, name='remove_coupon'),
     path('checkout/', views.checkout, name='checkout'),
-    path('update_order_status/', views.update_order_status, name='update_order_status'),
+    
 
     # order
+    path('create_order/', views.create_order, name='create_order'),
     path('your_orders/', views.customer_orders, name='your_orders'),
-    path('view_order/<int:order_id>/', views.view_order, name='view_order'),
+        path('view_orders/<int:order_id>/',
+         views.detail_order_view, name='detail_order_view'),
 
     # product detail view
     path('view_products/<int:product_id>/',

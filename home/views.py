@@ -16,7 +16,13 @@ from django.template.loader import render_to_string
 
 #home page
 def home(request):
-    products = Product.get_products()
+    if request.user.is_authenticated:
+        if request.user.user_type == "Admin":
+            products = Product.objects.exclude(product_admin=request.user)
+        else:
+            products = Product.get_products()
+    else:
+        products = Product.get_products()
     return render(request, 'customer/home.html', context={'products': products})
 
 #cart view
@@ -28,7 +34,8 @@ def cart(request):
     cart.save()
     coupon_form = CouponForm()
     coupons = Coupon.objects.all()
-    return render(request, 'customer/cart.html', {'cart_items': items, 'cart': cart, 'coupons':coupons, 'coupon_form': coupon_form})
+    coupon_discount = cart.get_discount()
+    return render(request, 'customer/cart.html', {'cart_items': items, 'cart': cart, 'coupons':coupons, 'coupon_form': coupon_form, 'coupon_discount':coupon_discount})
 
 
 #adding products to cart
@@ -78,9 +85,8 @@ def remove_cart_item(request, product_id):
     cart_item = get_object_or_404(CartItem, cart=cart, product=product_id)
     cart_item.delete()
     if not cart.items() and cart.coupon_use:
-        cart.coupon_use.used -= 1
-        cart.coupon_use = None
-        cart.save()
+        return remove_coupon(request)
+        
     return redirect('cart')
 
 
@@ -98,6 +104,7 @@ def apply_coupon(request,code):
     except Coupon.DoesNotExist:
         messages.error(request, 'Invalid coupon code.')
         return redirect('cart')
+    # import pdb; pdb.set_trace()
     if cart.apply_coupon(coupon):
         messages.success(request, 'Coupon applied.')
     else:
@@ -105,6 +112,22 @@ def apply_coupon(request,code):
   else:
       messages.error(request, 'Invalid coupon code.')
   return redirect('cart')
+
+def remove_coupon(request):
+    if request.method == 'POST':
+        cart_id = request.POST.get('cart_id')
+        cart =  get_object_or_404(Cart,pk=cart_id)
+        cart.coupon_use.used -= 1
+        cart.coupon_use = None
+        cart.save()
+        response_data = {
+        'coupon_discount': cart.get_discount(),
+        'discount_amount': cart.get_cart_total(),
+        'message': 'Coupon removed successfully.'
+        }
+        return JsonResponse(response_data)
+
+    return JsonResponse({'messages': 'Invalid request method'}, status=400)
 
 
 def checkout(request):
@@ -130,8 +153,8 @@ def checkout(request):
         'shipping_address': shipping_address,
     })
 
-# update the order status if payment is successful
-def update_order_status(request):
+# create the order status if payment is successful
+def create_order(request):
     if request.method == 'POST':
         cart_id = request.POST.get('cart_id')
         billing_address = request.POST.get('billing_address')
@@ -171,10 +194,20 @@ def customer_orders(request):
 
 #detail order view for past orders
 @login_required
-def view_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    order_items = OrderItem.objects.filter(order=order)
-    return render(request, 'customer/view_order.html', {'order': order, 'order_items': order_items})
+def detail_order_view(request, order_id):
+    order = get_object_or_404(Order, pk=order_id)
+    if request.user.user_type == "Admin":
+        base_template = 'admin/admin_base.html'
+        admin_products = Product.objects.filter(product_admin=request.user)
+        order_items = OrderItem.objects.filter(order=order,product__in=admin_products)
+        if not order_items.exists():
+            order_items = OrderItem.objects.filter(order=order)
+    else:
+        base_template = 'customer/base.html'
+        order_items = OrderItem.objects.filter(order=order)
+    order_total = OrderItem.calculate_order_items_total(order_items)
+    print(order_total)
+    return render(request, 'order_detail.html', {'base_template':base_template,'order': order, 'order_items': order_items, 'order_total':order_total})
 
 
 #about page
@@ -313,12 +346,20 @@ def delete_product(request, product_id):
 #to display the orders
 @admin_login_required
 def orders(request):
-  orders = Order.objects.all()
-  placed_orders=[]
-  for order in orders:
-        placed_orders += OrderItem.objects.filter(order=order, product__product_admin=request.user)
-  context = {'orders': placed_orders}
-  return render(request, 'admin/orders.html', context)
+    placed_orders = []
+    # Retrieve orders that belong to the admin's products
+    orders = Order.objects.all().order_by('-created_at')
+    # Iterate through the orders and retrieve order items for admin's products
+    for order in orders:
+        order_items = OrderItem.objects.filter(order=order, product__product_admin=request.user)
+        print(order_items.exists())
+        print(order_items,"-------")
+        if order_items.exists():
+            placed_orders.append(order)
+            continue
+    print(orders)
+    context = {'orders': placed_orders}
+    return render(request, 'admin/orders.html', context)
 
 
 #user account creation

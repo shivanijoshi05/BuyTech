@@ -1,49 +1,14 @@
 {% extends "customer/base.html" %}
 {%load static%}
 {%block title%}Cart {%endblock title%}
-{%block head%}
-<script>
-  $(document).on('click', '.delete-btn', function() {
-  var item_id = $(this).data('item-id');
-  $.ajax({
-    url: '/cart/delete/' + item_id,
-    type: 'DELETE',
-    success: function(result) {
-      // Code to update cart UI
-    }
-  });
-});
 
-$(document).on('click', '.increase-btn', function() {
-  var item_id = $(this).data('item-id');
-  $.ajax({
-    url: '/cart/increase/' + item_id,
-    type: 'PUT',
-    success: function(result) {
-      // Code to update cart UI
-    }
-  });
-});
-
-$(document).on('click', '.decrease-btn', function() {
-  var item_id = $(this).data('item-id');
-  $.ajax({
-    url: '/cart/decrease/' + item_id,
-    type: 'PUT',
-    success: function(result) {
-      // Code to update cart UI
-    }
-  });
-});
-
-</script>
-{%endblock head%}
 {%block body%}
-{%if messages%}
+{%if messages or response.messages%}
 <div class="alert alert-success my-0" role="alert">
   {% for message in messages %}
   <small {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</small>
   {% endfor %}
+  
 </div>
 {%endif%}
 <section class="h-100">
@@ -114,8 +79,8 @@ $(document).on('click', '.decrease-btn', function() {
             
 
 
-            {%if cart.total > 0 and not cart.coupon_use%}
-            <div id="coupon-container">
+            {%if cart.total > 0 %}
+            <div id="coupon-container" style="display: none;">
               <div class="col-md-4 my-3">
                 <form method="POST" action="{% url 'apply_coupon' None %}">
                   {% csrf_token %}
@@ -133,11 +98,23 @@ $(document).on('click', '.decrease-btn', function() {
                     </div>
                   </div>
                 </a>
-
+               
                 {%endfor%}
               </div>
             </div>
             {%endif%}
+            {% if cart.coupon_use.coupon %}
+            <div class="d-flex my-2" >
+              <div class="justify-content-between mx-2" id="coupon-info" >
+                <span>Coupon Used: </span>
+                <span class="border border-succuess rounded px-2 py-2"  class="clickable">
+                  {{cart.coupon_use.coupon.code}} 
+                  <span id="remove-coupon" class="clickable" aria-hidden="true">&times;</span>
+                </span>
+                 
+              </div>
+            </div>
+            {% endif %}
             {%if cart.total > 0 %}
             <hr class="my-4">
             <div class="d-flex justify-content-between">
@@ -147,13 +124,13 @@ $(document).on('click', '.decrease-btn', function() {
             
             <div class="d-flex justify-content-between">
               <p class="mb-2">Coupon Discount </p>
-              <p class="mb-2"> -$ {%if cart.coupon_use %} {{cart.coupon_use.coupon.discount}} {%else%} {{0.00}} {%endif%}</p>
+              <p class="coupon-discount mb-2"> -$ {%if cart.coupon_use %}  {{coupon_discount}} {%else%} {{0.00}} {%endif%}</p>
             </div>
             
             <hr class="my-2">
             <div class="d-flex justify-content-between">
               <p class="mb-2">Total Amount </p>
-              <p class="mb-2">$ {{cart.discount_amount}}</p>
+              <p class="discount-amount mb-2">$ {{cart.discount_amount}}</p>
             </div>
 
             <a href="{% url 'checkout' %}" class="text-decoration-none"> <button type="button"
@@ -175,4 +152,39 @@ $(document).on('click', '.decrease-btn', function() {
   </div>
   </div>
 </section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    const hasCoupon = '{{cart.coupon_use}}';
+    //console.log(hasCoupon);
+    if (hasCoupon == 'None') {
+      $('#coupon-container').show();
+    }
+
+    $("#remove-coupon").click(function () {
+    var cartId = '{{ cart.id }}';
+    $.ajax({
+      type: 'POST',
+      url: "{% url 'remove_coupon' %}", 
+      data: {
+        cart_id: cartId,
+        csrfmiddlewaretoken: '{{ csrf_token }}'
+      },
+      success: function (response) {
+        $('#coupon-info').remove();
+        $('#coupon-container').show();
+        $('.success').text(response.message)
+        $('.coupon-discount').text('$' + response.coupon_discount);
+        $('.discount-amount').text('$' + response.discount_amount);
+        console.log(response.coupon_discount);
+        console.log(response.discount_amount)
+
+      },
+      error: function () {
+        // Handle error
+      }
+    });
+  });
+  });
+</script>
 {% endblock body%}
