@@ -16,9 +16,9 @@
 
 <section class="h-100">
   <div class="container py-5 h-100">
-    <div class="row d-flex justify-content-center">
+    <div class="row d-flex justify-content-center" >
       <div class="col-md-10">
-        <div class="card">
+        <div class="card " data-order-id ="{{order.id}}"id="order-summary">
           <div class="card-body">
 
             <div class="row">
@@ -100,6 +100,8 @@
           <a href="" class="text-decoration-none me-3">
             <button class="btn btn-dark">Update Order Status</button>
           </a>
+          {% else %}
+              <button class="btn btn-dark" id="print-receipt">Print Receipt</button>
           {% endif%}
         </div>
          
@@ -110,6 +112,20 @@
   
   </div>
 </section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('#print-receipt').click(function () {
+      var orderId = $(this).data('order-id');
+       var printContents = $('#order-summary').html();
+      var originalContents = $('body').html();
+      $('body').html(printContents);
+      window.print();
+      $('body').html(originalContents);
+    });
+  });
+</script>
+
 
 
 {%endblock body%}
