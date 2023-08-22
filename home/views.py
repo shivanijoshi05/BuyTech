@@ -187,7 +187,6 @@ def detail_order_view(request, order_id):
         base_template = 'customer/base.html'
         order_items = OrderItem.objects.filter(order=order)
     order_total = OrderItem.calculate_order_items_total(order_items)
-    print(order_total)
     return render(request, 'order_detail.html', {'base_template':base_template,'order': order, 'order_items': order_items, 'order_total':order_total})
 
 
@@ -203,8 +202,11 @@ def contact(request):
         email = request.POST['email']
         phone = request.POST['phone']
         msg = request.POST['msg']
-        contact = Contact(user=request.user,name=name, email=email, phone=phone, msg=msg)
-        contact.save()
+        contact = Contact.objects.create(name=name, email=email, phone=phone, msg=msg)
+        if request.user.is_authenticated:
+            contact.user=request.user
+            contact.save()
+      
     return render(request, 'customer/contact.html')
 
 
@@ -217,41 +219,54 @@ def product_admin(request):
     return render(request, 'admin/product_admin.html')
 
 
-# adding products on admin site
+# to add or edit products display entered by admin
 @admin_login_required
-def add_products(request):
-    category = request.POST.get('category-input')
+def add_or_edit_product(request, product_id=None):
+    product = None
+    mobile = None
+    laptop = None
+    
+    if product_id:
+        product = get_object_or_404(Product, id=product_id)
+        if product.category == "Mobile":
+            mobile = get_object_or_404(Mobile, product=product)
+        elif product.laptop:
+            laptop =get_object_or_404(Laptop, product=product)
+  
     if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            product = form.save(commit=False)
+        product_form = ProductForm(request.POST, request.FILES)
+        
+        if product_form.is_valid():
+            category = request.POST.get('category-input')
+            product = product_form.save(commit=False)
             product.product_admin = request.user
             product.category = category
             product.save()
-
             if category == 'Mobile':
-                detail_form = MobileForm(request.POST)
+                mobile_form = MobileForm(request.POST)
+                if mobile_form.is_valid():
+                    mobile = mobile_form.save(commit=False)
+                    mobile.product = product
+                    mobile.save()
             elif category == 'Laptop':
-                detail_form = LaptopForm(request.POST)
-            if detail_form.is_valid():
-                detail_product = detail_form.save(commit=False)
-                detail_product.product = product
-                detail_product.save()
-            messages.success(request, 'Product added')
-            return redirect("view_products")
-        else:
-            if category == 'Mobile':
-                form = ProductForm()
-                detail_form = MobileForm()
-            else:
-                form = ProductForm()
-                detail_form = LaptopForm()
+                laptop_form = LaptopForm(request.POST)
+                if laptop_form.is_valid():
+                    laptop = laptop_form.save(commit=False)
+                    laptop.product = product
+                    laptop.save()
+
+            return redirect('view_products')  # Redirect to a product list view
     else:
-        category = ''
-        form = detail_form = None
+        product_form = ProductForm(instance=product)
+        mobile_form = MobileForm(instance=mobile)
+        laptop_form = LaptopForm(instance=laptop)
 
-    return render(request, 'admin/add_products.html', {'form': form, 'detail_form': detail_form, 'category': category})
-
+    return render(request, 'admin/add_products.html', {
+        'form': product_form,
+        'mobile_form': mobile_form,
+        'laptop_form': laptop_form
+        
+    })
 
 # products display entered by admin
 @admin_login_required
@@ -277,37 +292,6 @@ def detail_product_view(request, product_id):
     return render(request, "product_detail.html", {'detail_product': detail_product, 'base_template': base_template, 'user': request.user.user_type})
 
 
-# edit product detail
-@admin_login_required
-def edit_product(request, product_id):
-    product = get_object_or_404(Product, pk=product_id)
-    form = ProductForm(instance=product)
-    if product.category == "Mobile":
-        detail_product = get_object_or_404(Mobile, product=product)
-        detail_form = MobileForm(instance=detail_product)
-
-    else:
-        detail_product = get_object_or_404(Laptop, product=product)
-        detail_form = LaptopForm(instance=detail_product)
-
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES,
-                           instance=product)
-        if product.category == "Mobile":
-            detail_form = MobileForm(
-                request.POST, request.FILES, instance=detail_product)
-
-        else:
-            detail_form = LaptopForm(request.POST, request.FILES,
-                                     instance=detail_product)
-        if form.is_valid():
-            form.save()
-            detail_form.save()
-            messages.success(request, "Product is updated.")
-            return redirect('view_products')
-        else:
-            form = ProductForm(instance=product)
-    return render(request, "admin/edit_product.html", {'form': form, 'detail_form': detail_form, 'detail_product': detail_product})
 
 
 # delete product
@@ -333,12 +317,9 @@ def orders(request):
     # Iterate through the orders and retrieve order items for admin's products
     for order in orders:
         order_items = OrderItem.objects.filter(order=order, product__product_admin=request.user)
-        print(order_items.exists())
-        print(order_items,"-------")
         if order_items.exists():
             placed_orders.append(order)
             continue
-    print(orders)
     context = {'orders': placed_orders}
     return render(request, 'admin/orders.html', context)
 
