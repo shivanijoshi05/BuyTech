@@ -31,9 +31,9 @@ urlpatterns = [
     # admin site pages
     path('product_admin/', views.product_admin, name='product_admin'),
     path('view_products/', views.view_products, name='view_products'),
-    path('add_products/', views.add_products, name='add_products'),
+    path('add_products/', views.add_or_edit_product, name='add_products'),
     path('edit_product/<int:product_id>/',
-         views.edit_product, name='edit_product'),
+         views.add_or_edit_product, name='edit_product'),
     path('delete_product/<int:product_id>/',
          views.delete_product, name='delete_product'),
     path('orders/', views.orders, name='orders'),
