@@ -53,42 +53,23 @@ def add_to_cart(request, product_id):
     messages.success(request, 'Added to cart.')
     return redirect('cart')
 
-
-# increase quantity of product
-def increase_cart_item_quantity(request, product_id):
-    cart = get_object_or_404(Cart, user=request.user)
-    cart_item = get_object_or_404(CartItem, cart=cart, product=product_id)
-    cart_item.quantity += 1
-    cart_item.save()
-    return redirect('cart')
-
-
-# decrease quantity of product
-def decrease_cart_item_quantity(request, product_id):
-    cart = get_object_or_404(Cart, user=request.user)
-    cart_item = get_object_or_404(CartItem, cart=cart, product=product_id)
-    if cart_item.quantity > 1:
-        cart_item.quantity -= 1
-        cart_item.save()
-    else:
-        cart_item.delete()
-    if not cart.items() and cart.coupon_use:
-        cart.coupon_use.used -= 1
-        cart.coupon_use=None
-        cart.save()
-    return redirect('cart')
-
-
-# delete product from cart
-def remove_cart_item(request, product_id):
-    cart = get_object_or_404(Cart, user=request.user)
-    cart_item = get_object_or_404(CartItem, cart=cart, product=product_id)
-    cart_item.delete()
-    if not cart.items() and cart.coupon_use:
-        return remove_coupon(request)
+@login_required
+def update_cart_item_quantity(request, product_id):
+    if request.method == "POST":
+        cart = get_object_or_404(Cart, user=request.user)
+        product = get_object_or_404(Product, pk=product_id)
+        cart_item = get_object_or_404(CartItem, cart=cart, product=product)
+        new_quantity = int(request.POST.get('quantity'))
+        cart_item.quantity += new_quantity
+        if request.POST.get('remove') == 'true' or cart_item.quantity <= 0:
+            cart_item.delete()
+            return JsonResponse({'success': True, 'remove': True})
         
-    return redirect('cart')
+        cart_item.save()
 
+        return JsonResponse({'success': True, 'quantity': cart_item.quantity, 'remove': False})
+
+    return JsonResponse({'success': False, 'message': 'Failed!!'})
 
 #applying coupon
 def apply_coupon(request,code):

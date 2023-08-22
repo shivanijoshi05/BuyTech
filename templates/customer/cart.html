@@ -33,7 +33,7 @@
                   </div>
                 </div>
                 {%for item in cart_items %}
-                <div class="card mb-3">
+                <div class="card mb-3 cart-item">
                   <div class="card-body">
                     <div class="d-flex justify-content-between">
                       <div class="d-flex flex-row align-items-center">
@@ -46,27 +46,25 @@
                           <p class="small mb-0">{{item.product.description}}</p>
                         </div>
                       </div>
+                      <div class="row d-flex align-items-center">
+                      <form method="POST" class="remove-cart-item-form mb-0">
+                        {% csrf_token %}
+                      <input type="hidden" class="product-id" value="{{ item.product.id }}">
                       <div class="d-flex flex-row align-items-center">
-                        <form method="POST" action="{% url 'decrease_cart_item_quantity' item.product.id %}">
-                          {% csrf_token %}
-                          <button class="btn btn-link px-2" type="submit">
-                            <i class="fas fa-minus"></i>
-                          </button>
-                        </form>
-                        <h5 class="fw-normal mb-0">{{item.quantity}}</h5>
-                        <form method="POST" action="{% url 'increase_cart_item_quantity' item.product.id %}">
-                          {% csrf_token %}
-                          <button class="btn btn-link px-2" type="submit">
-                            <i class="fas fa-plus"></i>
-                          </button>
-                        </form>
-                        <form method="POST" action="{% url 'remove_cart_item' item.product.id %}">
-                          {% csrf_token %}
-                          <button class="btn btn-link px-2" type="submit">
-                            <i class="fa fa-trash" style="color:black;"></i>
-                          </button>
-                        </form>
+                        <button class="btn btn-link px-2 decrease-quantity">
+                          <i class="fas fa-minus"></i>
+                        </button>
+                        <h5 class="item-quantity fw-normal mb-0">{{ item.quantity }}</h5>
+                        <button class="btn btn-link px-2 increase-quantity">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="btn btn-link px-2" type="submit">
+                          <i class="fa fa-trash remove-cart-item" style="color:black;"></i>
+                        </button>
                       </div>
+                      </form>
+                      </div>
+
 
 
                     </div>
@@ -185,6 +183,52 @@
       }
     });
   });
-  });
+  
+    $(".decrease-quantity").click(function () {
+      var product_id = $(this).closest(".remove-cart-item-form").find(".product-id").val();
+      updateCartItemQuantity(product_id, -1,false);
+    });
+
+    $(".increase-quantity").click(function () {
+      var product_id = $(this).closest(".remove-cart-item-form").find(".product-id").val();
+      updateCartItemQuantity(product_id, 1,false);
+    });
+      $(".remove-cart-item").click(function () {
+      var product_id = $(this).closest(".remove-cart-item-form").find(".product-id").val();
+      updateCartItemQuantity(product_id, 0,true);
+    });
+
+    function updateCartItemQuantity(product_id, change, remove=false) {
+      var csrfToken = "{{ csrf_token }}";
+      var url = "{% url 'update_cart_item_quantity' 0 %}".replace("0", product_id);
+      
+      $.ajax({
+        url: url,
+        type: "POST",
+        data: {
+          csrfmiddlewaretoken: csrfToken,
+          quantity: change,
+          remove: remove
+        },
+        success: function (data) {
+          if (data.success) {
+            if(data.remove){
+              $('.cart-item[data-product-id="' + product_id + '"]').remove();
+            }else{
+              $('.item-quantity[data-product-id="' + product_id + '"]').text(data.quantity);
+            }
+            
+          } else {
+            // Handle error if needed
+            console.log('quantity', data.message);
+          }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          console.log('AJAX request failed:', errorThrown);
+        }
+      });
+      console.log('Failed');
+    }
+});
 </script>
 {% endblock body%}
