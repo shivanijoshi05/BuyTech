@@ -101,7 +101,7 @@ class Contact(models.Model):
     """
     Model for storing contact form details.
     """
-    user =  models.ForeignKey(CustomUser,  on_delete=models.CASCADE,default=None)
+    user =  models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
     name = models.CharField(max_length=20)
     email = models.EmailField()
     phone = models.CharField(max_length=10)
