@@ -1,38 +1,198 @@
 {% extends "customer/base.html"%}
 {% load static %}
-{%block title%}About Me{%endblock title%}
+{%block title%}About Us{%endblock title%}
 {%block aboutactive%} active {%endblock aboutactive%}
 {%block body%}
-<h2 class="text-center mt-3">About Me</h2>
 
-<div class="contanier border border-dark" style="margin:4% 8%; padding:4%">
-  <div class="row d-flex justify-content-center">
-    <div class="col-sm-4">
-      <img class="rounded-circle py-4" src="{% static '/images/shivani.jpg' %}" alt="">
-    </div>
-    <div class="col-sm-6">
-      <h2> Shivani Joshi</h2>
-      <p>Data Science || ML/AI Enthusiat|| Computer Engineer</p>
-      <p style="text-align:justify;">I'm a computer engineer and graduated from
-        vishwakarma government
-        engineering college. My hometown is Jamnagar and currently living in
-        Ahmedabad. I have joined internship at DRC Systems Pvt. Ltd and my
-        job
-        role is Python Developer. My skills include Python, Java, Data
-        Science,
-        Machine Learning, Django, Flask. Also, I'm a very good at designing
-        posters. I have also completed 1 year Artificial Intelligence
-        traning
-        program "TechSaksham" sponsered by Microsoft, SAP and Edunet
-        Foundation.
-        I've developed many projects which includes Text summarization,
-        Speech
-        Emotion Recognition, To-do app. Apart from that, my hobbies include
-        reading, singing and playing badminton.
-      </p>
+<section class="about-us py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <h2 class="mb-4">About Us</h2>
+        <p class="text-justify">Welcome to <strong>buyTech</strong>, your trusted destination for
+          the latest mobile devices and laptops. At our store, we're passionate about technology and dedicated to
+          providing you with the best products and shopping experience.</p>
+        <p class="text-justify">With years of experience in the industry, we have become a reliable source for
+          high-quality mobile phones and laptops from top brands. Our team of experts carefully selects each product to
+          ensure you get the latest features and outstanding performance.</p>
+        <p class="text-justify">Our mission is to empower you with the latest technology that fits your lifestyle,
+          whether you're a tech enthusiast, a professional, or a student. We believe that technology should be
+          accessible to everyone, and that's why we offer a wide range of products to suit various needs and budgets.
+        </p>
+      </div>
+      <div class="col-md-6 text-center">
+        <div id="about-slider" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <a href="/">
+                <img src="{% static 'images/buytech_logo.png' %}" alt="About Us" style="max-width: 300px; max-height: 300px;">
+              </a>
+            </div>
+            <div class="carousel-item">
+              <a href="">
+                <img src="{% static 'images/about_us1.jpg' %}" alt="Slider 2"  style="max-width: 300px; max-height: 300px;">
+              </a>
+            </div>
+            <div class="carousel-item">
+              <a href="contact/">
+                <img src="{% static 'images/about_us2.jpg' %}" alt="Slider 3" style="max-width: 300px; max-height: 300px;">
+              </a>
+            </div>
+            <!-- Add more carousel items here -->
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#about-slider" data-bs-slide="prev"
+            style="color: gray;">
+            <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(100%);"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#about-slider" data-bs-slide="next"
+            style="color: gray;">
+            <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(100%);"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+
+        </div>
+      </div>
     </div>
   </div>
+</section>
 
-</div>
+<section class="our-values py-2">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-12 text-center">
+        <h2 class="mb-4">Our Values</h2>
+        <div id="values-slider" class="carousel slide px-5" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <div class="card animated fadeIn">
+                <div class="card-body">
+                  <i class="fas fa-gem fa-4x mb-3 text-primary"></i>
+                  <h5 class="card-title">Quality</h5>
+                  <p class="card-text">We offer only genuine products and ensure they meet the highest standards of
+                    quality and performance. Our commitment to quality is evident in every product we offer. Quality is
+                    not just a feature for us; it's a core value that guides our decisions and operations. We believe in
+                    setting the bar high and delivering products that reflect our dedication to excellence.</p>
+                  <p class="card-text">From rigorous testing processes to careful selection of suppliers, every step is
+                    taken with a focus on quality. We take pride in the satisfaction our products bring to our
+                    customers, knowing that they can rely on us for products that deliver outstanding performance and
+                    lasting value.</p>
+                  <p class="card-text">Our quality assurance extends beyond the products themselves to encompass every
+                    aspect of your experience with us. We're committed to providing a seamless and reliable shopping
+                    journey, ensuring that you receive the utmost value for your investment.</p>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <div class="card animated fadeIn">
+                <div class="card-body">
+                  <i class="fas fa-truck fa-4x mb-3 text-success"></i>
+                  <h5 class="card-title">Reliability</h5>
+                  <p class="card-text">You can count on us for reliable products, secure transactions, and timely
+                    deliveries. We prioritize your trust and strive to exceed your expectations every step of the way.
+                    Our commitment to reliability goes beyond the products; it's about the experience you have with us.
+                  </p>
+                  <p class="card-text">With a focus on transparency and consistency, we ensure that our promises are
+                    upheld. Our dedicated customer support team is here to address your concerns and assist you
+                    throughout your shopping journey. We believe in building long-lasting relationships based on trust
+                    and satisfaction.</p>
+                  <p class="card-text">From the moment you browse our products to the delivery at your doorstep, we work
+                    tirelessly to provide you with a seamless and trustworthy experience. Your satisfaction is at the
+                    heart of what we do, and we're here to make your interaction with us as reliable as our products.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <div class="card animated fadeIn">
+                <div class="card-body">
+                  <i class="fas fa-users fa-4x mb-3 text-warning"></i>
+                  <h5 class="card-title">Expertise</h5>
+                  <p class="card-text">Our team of experts is here to assist you in making informed choices based on
+                    your needs. We bring a wealth of knowledge to ensure you find products that align with your
+                    preferences and requirements. We understand that every customer is unique, and we're here to cater
+                    to your individual needs.</p>
+                  <p class="card-text">Our experienced team members have a deep understanding of the products we offer.
+                    They're equipped to provide you with detailed information, answer your questions, and guide you
+                    toward the best choices for your specific use cases. We're not just selling products; we're offering
+                    personalized solutions.</p>
+                  <p class="card-text">Whether you're a tech enthusiast, a professional, or a casual user, our team can
+                    assist you in finding products that suit your skill level and requirements. We're passionate about
+                    sharing our expertise and helping you make confident decisions that lead to enhanced technology
+                    experiences.</p>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <div class="card animated fadeIn">
+                <div class="card-body">
+                  <i class="fas fa-lightbulb fa-4x mb-3 text-info"></i>
+                  <h5 class="card-title">Innovation</h5>
+                  <p class="card-text">We stay up-to-date with the latest technological advancements to bring you
+                    cutting-edge products. Our dedication to innovation drives us to provide you with products that
+                    enhance your daily life and keep you ahead of the curve. We believe that innovation is the key to
+                    unlocking new possibilities.</p>
+                  <p class="card-text">Our product selection is curated to include the latest features and advancements.
+                    We believe in offering products that not only meet current needs but also anticipate future trends.
+                    Our commitment to innovation extends to our partnerships with leading brands that share our vision
+                    for a tech-savvy world.</p>
+                  <p class="card-text">Whether it's the latest mobile technology or groundbreaking laptop features, we
+                    strive to bring you products that inspire and empower. We're excited to introduce you to products
+                    that not only meet your expectations but also introduce you to new ways of experiencing technology.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <div class="card animated fadeIn">
+                <div class="card-body">
+                  <i class="fas fa-heart fa-4x mb-3 text-danger"></i>
+                  <h5 class="card-title">Customer-Centric</h5>
+                  <p class="card-text">Your satisfaction is our priority. We're here to provide solutions and support,
+                    ensuring your shopping experience is enjoyable and hassle-free. Your feedback and needs drive us to
+                    continuously improve and serve you better. We value your trust and aim to exceed your expectations
+                    at every turn.</p>
+                  <p class="card-text">We're dedicated to being responsive to your needs, addressing your concerns, and
+                    providing you with the best assistance possible. Our customer support team is just a call or message
+                    away, ready to assist you with any inquiries you may have. Your comfort and convenience are at the
+                    forefront of our efforts.</p>
+                  <p class="card-text">At buyTech, we believe that a happy customer is the best
+                    endorsement. We take pride in the relationships we build with our customers, and we're committed to
+                    delivering an experience that leaves you satisfied and confident in your choice to shop with us.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#values-slider" data-bs-slide="prev"
+        style="color: gray;">
+        <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(100%);"></span>
+        <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#values-slider" data-bs-slide="next"
+          style="color: gray;">
+          <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(100%);"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .card-text,.text-justify {
+    text-align: justify;
+  }
+  .card-body{
+    margin:40px;
+  }
+</style>
+
+
+
+
+
+
+
 
 {%endblock body%}
