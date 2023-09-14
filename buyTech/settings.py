@@ -33,8 +33,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'home',
-    'paypal.standard.ipn',
+    'djangoapps.home',
+    'djangoapps.cart',
+    'djangoapps.order',
+    'djangoapps.product',
+    'djangoapps.user_account',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +67,7 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
-AUTH_USER_MODEL = "home.CustomUser"
+AUTH_USER_MODEL = "user_account.CustomUser"
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -100,9 +103,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'buytech100@gmail.com'
-EMAIL_HOST_PASSWORD = 'cdybolsfnejsnlqd'
-DEFAULT_FROM_EMAIL = 'buytech100@gmail.com'
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='') 
 
 # Load environment variables from .env file
 DJANGO_ENV = config('DJANGO_ENV', default='development')
