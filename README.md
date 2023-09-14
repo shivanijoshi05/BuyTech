@@ -1,5 +1,5 @@
 # BuyTech
-Ecommerce website for Mobile/Laptop with following features:
+E-commerce website for Mobile/Laptop with following features:
 
 - User Login/Register 
 - Product Admin Login/Register 
@@ -8,9 +8,7 @@ Ecommerce website for Mobile/Laptop with following features:
 - Add to Cart 
 - Coupon/Discount Options 
 - Purchase/Receipt Options 
-- Add GST 
-- Payment option with paytm
+- Payment option with paypal
 
 Technology used:
-
-- Python, Django, HTML, CSS 
+- Python, Django, HTML, CSS, Jquery
