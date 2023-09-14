@@ -20,7 +20,12 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('home.urls')),
+    path('', include('djangoapps.home.urls')),
+    path('', include('djangoapps.user_account.urls')),
+    path('cart/', include('djangoapps.cart.urls')),
+    path('order/', include('djangoapps.order.urls')),
+    path('product/', include('djangoapps.product.urls')),
+    
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,

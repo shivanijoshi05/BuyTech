@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from home.models import (Cart, CartItem, Contact, Coupon, CouponUse, CustomUser, Laptop,
-                         Mobile, Order, OrderItem, Product, Profile, ShippingAddress)
+from .models import CustomUser, Profile
 
 
 class CustomUserAdminForm(UserChangeForm):
@@ -30,17 +29,11 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'user_type', 'is_approved')
 
 
-admin.site.register(CustomUser, CustomUserAdmin)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'profile_img', 'mobile', 'bio', 'address')
+    search_fields = ('user__username', 'user__email')
+    list_filter = ('mobile',)
 
-admin.site.register(Contact)
-admin.site.register(Product)
-admin.site.register(Mobile)
-admin.site.register(Laptop)
-admin.site.register(Profile)
-admin.site.register(Order)
-admin.site.register(Cart)
-admin.site.register(Coupon)
-admin.site.register(CouponUse)
-admin.site.register(CartItem)
-admin.site.register(OrderItem)
-admin.site.register(ShippingAddress)
+
+admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Profile, ProfileAdmin)

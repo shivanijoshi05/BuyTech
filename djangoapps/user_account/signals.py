@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from home.models import CustomUser, Profile
+from .models import CustomUser, Profile
 
 
 # to create basic profile with user account details after signup
