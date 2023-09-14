@@ -18,7 +18,7 @@
   <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center" >
       <div class="col-md-10">
-        <div class="card " data-order-id ="{{order.id}}"id="order-summary">
+        <div class="card" data-order-id ="{{order.id}}"id="order-summary">
           <div class="card-body">
 
             <div class="row">
@@ -31,7 +31,7 @@
                   </div>
                 </div>
                 {%for item in order_items %}
-                  <div class="card mb-3">
+                  <div class="card mb-3 item-card" id="order-item" data-order-item-id ="{{item.id}}">
                     <div class="card-body">
                       <div class="d-flex justify-content-between">
                         <div class="d-flex flex-row align-items-center">
@@ -54,6 +54,41 @@
 
 
                       </div>
+                      {% if request.user.user_type == "Admin" and item.product.product_admin == request.user %}
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <p class="mb-0">Status:</p>
+                        </div>
+                        <div>
+                        <select name="new_status" class="status-select">
+                          <option value="Placed" {% if item.status == "Placed" %}selected{% endif %}>Placed</option>
+                          <option value="Processing" {% if item.status == "Processing" %}selected{% endif %}>Processing</option>
+                          <option value="Shipped" {% if item.status == "Shipped" %}selected{% endif %}>Shipped</option>
+                          <option value="Delivered" {% if item.status == "Delivered" %}selected{% endif %}>Delivered</option>
+                        </select>
+                        </div>
+                      </div>
+                      {%else%}
+                      <p class="order-status" style="display: none;">{{ item.status }}</p>
+                      
+                      <div class="d-flex flex-row justify-content-between align-items-center align-content-center">
+                        <span class="dot"></span>
+                        <hr class="flex-fill track-line"><span class="dot"></span>
+                        <hr class="flex-fill track-line"><span class="dot"></span>
+                        <hr class="flex-fill track-line"><span class="d-flex justify-content-center align-items-center big-dot dot">
+                          <i class="fa fa-check text-white"></i></span>
+                      </div>
+                      
+                      <div class="d-flex flex-row justify-content-between align-items-center">
+                        <div class="d-flex flex-column align-items-start"><span>Order placed</span>
+                        </div>
+                        <div class="d-flex flex-column justify-content-center align-items-center"><span>Order Processing</span></div>
+                        <div class="d-flex flex-column align-items-center"><span>Shipped</span></div>
+                        <div class="d-flex flex-column align-items-end"><span>Delivered</span></div>
+                      </div>
+
+
+                      {% endif %}
                     </div>
                   </div>
                 {%endfor%}
@@ -91,19 +126,11 @@
              
             <div class="d-flex justify-content-between">
                 <p class="mb-2">Order Total</p>
-                <p class="mb-2">$ {{order_total}}</p>
+                <p class="mb-2">$ {%if request.user.user_type == "Admin"  %} {{order_total}} {%else%} {{order.discount_amount}} {%endif%}</p>
             </div>
           </div>
         </div>
-        <div class="d-flex justify-content-center my-3">
-          {% if request.user.user_type == "Admin"%}
-          <a href="" class="text-decoration-none me-3">
-            <button class="btn btn-dark">Update Order Status</button>
-          </a>
-          {% else %}
-              <button class="btn btn-dark" id="print-receipt">Print Receipt</button>
-          {% endif%}
-        </div>
+     
          
       </div>
      
@@ -123,9 +150,100 @@
       window.print();
       $('body').html(originalContents);
     });
+    $('.status-select').change(function () {
+      var orderItemId = $(this).closest('#order-item').data('order-item-id');
+      var status = $(this).val();
+      console.log(orderItemId);
+      console.log(status)
+
+      $.ajax({
+        type: 'POST',
+        url: '{% url "update_order_status" %}',  // Update with the actual URL
+        data: {
+          'csrfmiddlewaretoken': '{{ csrf_token }}',
+          'order_item_id': orderItemId,
+          'status': status,
+        },
+        success: function () {
+          
+        },
+        error: function () {
+          // Handle error if needed
+        }
+      });
+    });
+    $('.item-card').each(function () {
+      const statusElement = $(this).find('.order-status');
+      const status = statusElement.text().trim().toLowerCase();
+
+      const progressComponents = $(this).find('.dot');
+
+      const statuses = ['placed', 'processing', 'shipped', 'delivered'];
+      const statusIndex = statuses.indexOf(status);
+
+      progressComponents.each(function (index) {
+        const currentDot = $(this);
+        const trackLine = currentDot.prev('.track-line');
+
+        if (index <= statusIndex) {
+          currentDot.addClass('completed');
+          trackLine.addClass('completed');
+          
+        } else {
+          currentDot.addClass('uncompleted');
+         
+        }
+      });
+    });
+
   });
 </script>
+<style>
+.track-line {
+height: 2px !important;
+background-color: #000;
+opacity: 1;
+}
 
+.dot {
+height: 10px;
+width: 10px;
+margin-left: 3px;
+margin-right: 3px;
+margin-top: 0px;
+background-color: #000;
+border-radius: 50%;
+display: inline-block
+}
 
+.big-dot {
+height: 25px;
+width: 25px;
+margin-left: 0px;
+margin-right: 0px;
+margin-top: 0px;
+background-color: #000;
+border-radius: 50%;
+display: inline-block;
+}
+
+.big-dot i {
+font-size: 12px;
+}
+
+.card-stepper {
+z-index: 0
+}
+
+.completed{
+  background-color: #488978;
+  color: #488978;
+  
+}
+.uncompleted{
+  background-color: #000;
+  
+}
+</style>
 
 {%endblock body%}
