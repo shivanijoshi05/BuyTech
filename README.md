@@ -44,11 +44,8 @@ python3 manage.py runserver
 
 ## Setting Environment Variables
 
-This Django project relies on environment variables for configuration. Before you can run the application, make sure you have set the following environment variables:
+This Django project relies on environment variables for configuration. Before you can run the application, make sure you have set the following environment variables in .env file:
 
-### 1. Secret Key
-
-The Django application requires a sfew environment variables to be set in .env file:
 ```bash
 DJANGO_ENV = 'development'
 EMAIL_HOST_USER = 'example@gmail.com'
