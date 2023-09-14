@@ -1,4 +1,4 @@
-# BuyTech
+## BuyTech
 E-commerce website for Mobile/Laptop with following features:
 
 - User Login/Register 
@@ -10,5 +10,13 @@ E-commerce website for Mobile/Laptop with following features:
 - Purchase/Receipt Options 
 - Payment option with paypal
 
-Technology used:
+# Technology used:
 - Python, Django, HTML, CSS, Jquery
+
+# Installation
+
+**Step 1:** Clone the repository.
+
+```bash
+git clone https://github.com/shivanijoshi05/buyTech.git
+
