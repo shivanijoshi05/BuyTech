@@ -9,19 +9,38 @@
     <title>Log In</title>
 
     <link href="{% static 'css/bootstrap.min.css'%}" rel="stylesheet" />
+    <link rel="icon" href="{% static 'images/favicon.png' %}" type="image/x-icon">
     <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
+
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: antiquewhite;
+    }
+  
+    .card {
+      border-radius: 1rem;
+      height: 100%;
+      min-width: 90%;
+      box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+    }
+  </style>
   </head>
 
-  <body style="background-color: antiquewhite;">
-    <div class="row d-flex justify-content-center align-items-center mx-3 my-5">
-      <div class="col col-xl-10">
-        <div class="card" style="border-radius: 1rem; height:700px;">
-          <div class="row g-0">
-            <div class="col-md-6 col-lg-6 d-none d-md-block ">
+  <body>
+    <div class="row">
+      <div class="col px-0">
+        <div class="card">
+          <div class="row">
+            <div class="col-md-6 d-none d-md-block ">
               <img src="{% static 'images/buytech_bg.jpg'%}" alt="BuyTech" class="img-fluid" style="border-radius:
                 1rem 0 0 1rem;height:700px;" />
             </div>
-            <div class="col-md-4 col-lg-6 d-flex align-items-center">
+            <div class="col-md-6 d-flex align-items-center my-5">
               <div class="card-body p-4 p-lg-5 text-black">
 
                 <div class="d-flex align-items-center mb-3 pb-1">
@@ -35,7 +54,7 @@
                 <form method="POST">
                   {% csrf_token %}
                   {% for field in login_form %}
-                  <div class="d-flex flex-row align-items-center mb-4">
+                  <div class="d-flex flex-row align-items-center mb-2">
                     <div class="form-outline flex-fill mb-0">
                       <label class="form-label">{{field.label}} </label>
                       <div class="controls">
@@ -48,7 +67,7 @@
                     </div>
                   </div>
                   {% endfor %}
-                  <div>
+                  <div class="mb-3">
                     {% for message in messages %}
                     <small {% if message.tags %} class="{{ message.tags
                         }}" {% endif %}>{{ message }}</small>
