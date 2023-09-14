@@ -1,0 +1,73 @@
+{%load static%}
+
+{%if products%}
+<section style="display: flex; flex-direction: row; flex-wrap: wrap; margin:0;">
+{% for product in products %}
+<a href="{% url 'detail_product_view' product.id %}" class="text-decoration-none">
+    <div class="card" style="width: 17rem; margin:20px;">
+
+        <div class="bg-image hover-overlay ripple ripple-surface ripple-surface-light" data-mdb-ripple-color="light">
+            <div class="card-img-container mt-2" style=" display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 200px;"><img src="{{ product.image.url }}" class="card-img-top mx-auto img-fluid"
+                    style="border-top-left-radius: 15px; border-top-right-radius: 15px; width:200px; height:200px;">
+                <a href="#!">
+                    <div class="mask"></div>
+                </a>
+            </div>
+
+        </div>
+        <div class="card-body py-0">
+            <div class="text-center">
+                <div>
+                    <p class="text-dark my-0">{{product.name}}</p>
+                    <p class="small text-muted">{{product.category}}</p>
+                </div>
+            </div>
+        </div>
+        <hr class="my-0" />
+        <div class="card-body py-0">
+            <div class="d-flex justify-content-between align-items-center py-2">
+                <p class="text-dark text-decoration-none mb-0">Price</p>
+                <p class="text-dark text-decoration-none mb-0">$ {{product.price}}</p>
+            </div>
+        </div>
+        <hr class="my-0" />
+        <div class="card-body">
+            <div class="d-flex  justify-content-center  align-items-center">
+                <a href="{% url 'detail_product_view' product.id %}" class="text-decoration-none text-dark"><button
+                        class="btn btn-outline-dark mx-3">View</button></a>
+                {% if product.product_admin != request.user %}
+                <a href="{% url 'add_to_cart' product.id %}" class="text-decoration-none">
+                    <button class="btn btn-outline-dark mx-3">Add to Cart</button>
+                </a>
+                {%endif%}
+            </div>
+        </div>
+    </div>
+</a>
+{% endfor %}
+</section>
+{%else%}
+<div class="no-results">
+    <img src="{% static 'images/no-results-image.jpg' %}"  class="border" alt="No Results">
+    <h5>Sorry, No products found!!</h5>
+</div>
+
+<style>
+.no-results {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 500px;
+}
+.no-results img {
+    max-width: 500px;
+    height: 300px;
+    margin-bottom: 10px;
+    border-radius: 20px;
+}
+</style>
+{%endif%}

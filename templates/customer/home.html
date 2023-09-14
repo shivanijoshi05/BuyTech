@@ -1,73 +1,205 @@
 {% extends "customer/base.html" %}
 {%load static%}
-{%block title%}home {%endblock title%}
+{%block title%}buyTech {%endblock title%}
 {%block homeactive%} active {%endblock homeactive%}
 
 {%block body%}
-{%if messages%}
-<div class="alert alert-success my-0" role="alert">
+{%if messages or response.messages%}
+<div class="alert my-0 {% if message.tags == success %} alert-success {%else%} alert-danger {%endif%}" role="alert">
     {% for message in messages %}
     <small {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</small>
     {% endfor %}
 </div>
 {%endif%}
-<h2 class="text-center my-3"> Products </h2>
-
-<section style="display: flex; flex-direction: row; flex-wrap: wrap ;">
-    {% for product in products %}
-    <a href="{% url 'detail_product_view' product.id %}" class="text-decoration-none">
-        <div class="card" style="width: 18rem; margin:20px;">
-        
-            <div class="bg-image hover-overlay ripple ripple-surface ripple-surface-light" data-mdb-ripple-color="light">
-                <div class="card-img-container mt-2" style=" display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 200px;"><img src="{{ product.image.url }}" class="card-img-top mx-auto img-fluid"
-                        style="border-top-left-radius: 15px; border-top-right-radius: 15px; width:200px; height:200px;">
-                    <a href="#!">
-                        <div class="mask"></div>
-                    </a>
-                </div>
-        
+    <div class="row px-0 mx-0">
+        <div class="row px-0 mx-0">
+            <div class="col-md-3 my-4">
+                <!-- Filter Button (Responsive) -->
+                <button class="btn btn-dark d-block  mx-2" type="button" data-bs-toggle="collapse" data-bs-target="#filterColumn">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
             </div>
-            <div class="card-body py-0">
-                <div class="text-center">
-                    <div>
-                        <p class="text-dark my-0">{{product.name}}</p>
-                        <p class="small text-muted">{{product.category}}</p>
+            <div class="col-md-9">
+                <h2 class="text-center my-3"> Products </h2>
+            </div>
+            
+            <div class="row px-0 mx-0">
+                <!-- Filter Column (Responsive) -->
+                <div class="col-md-3 my-3  collapse d-md-block" id="filterColumn">
+                    <div class="card card-body mx-2" style="margin-top: 5px;">
+                        <div class="row mb-3 mx-2">
+                            <h5 class="px-0">Category</h5>
+                            <select class="form-select" id="category">
+                                <option value="All">All</option>
+                                <option value="Mobile">Mobile</option>
+                                <option value="Laptop">Laptop</option>
+                            </select>
+                        </div>
+                        <div class="row mb-3 mx-2">
+                            <h5 class="px-0">Brand</h5>
+                            <div id="brandFilter">
+                
+                            </div>
+                        </div>
+                        <div class="row mb-3 mx-2">
+                            <h5 class="px-0">Color</h5>
+                            <div id="colorFilter">
+                
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <hr class="my-0" />
-            <div class="card-body py-0">
-                <div class="d-flex justify-content-between align-items-center py-2">
-                    <p class="text-dark text-decoration-none mb-0">Price</p>
-                    <p class="text-dark text-decoration-none mb-0">$ {{product.price}}</p>
+                <div class="col-md-9 mb-3">
+            
+                    <div id="products">
+                    </div>
                 </div>
-            </div>
-            <hr class="my-0" />
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center pb-2 mb-1">
-                    <a href="{% url 'detail_product_view' product.id %}" class="text-decoration-none text-dark"><button
-                            class="btn btn-outline-dark">View</button></a>
-                    <a href="{% url 'add_to_cart' product.id %}" class="text-decoration-none">
-                        <button class="btn btn-outline-dark">Add to Cart</button>
-                    </a>
-                </div>
+               
             </div>
         </div>
-    </a>
-    {% endfor %}
-</section>
+       
+        
+    </div>
+    
 <style>
     section {
         margin: 20px;
     }
-
-    @media (max-width: 768px) {
+    
+      @media (max-width: 768px) {
+       
         section {
             justify-content: center;
         }
     }
+    .btn-filter {
+        margin-bottom: 10px;
+
+    }
+    #brandFilter,#colorFilter{
+        padding:0;
+    }
 </style>
+
+<script src="{% static 'js/jquery.min.js'%}"></script>
+<script src="{% static 'js/bootstrap.min.js'%}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script>
+      // Define a function to handle the search
+        function searchProducts() {
+            const searchInput = $('#product-search');
+            const searchResults = $('#products');
+            const query = searchInput.val();
+
+            $.ajax({
+                url: `/product/api/product-search/?query=${query}`,
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    // Clear previous search results
+                    searchResults.empty();
+
+                    $('#products').html(data.product_list_html);
+                },
+                error: function (error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        }
+
+        // Function to populate select element with options
+        function populateCheckboxes(checkboxDivId, options, name) {
+            const checkboxDiv = $(checkboxDivId);
+            checkboxDiv.empty();
+
+            options.forEach(option => {
+                const checkboxLabel = $('<label>', {
+                    class: 'form-check-label d-block mb-2', // Add class for a block element
+                    text: option,
+                    for: name + '-' + option
+                });
+
+                const checkboxInput = $('<input>', {
+                    class: 'form-check-input mx-2',
+                    type: 'checkbox',
+                    name: name,
+                    value: option,
+                    id: name + '-' + option
+                });
+
+                checkboxLabel.prepend(checkboxInput);
+                checkboxDiv.append(checkboxLabel);
+            });
+        }
+        // Function to fetch and filter products
+        function filterProducts() {
+            const selectedCategory = $('#category').val();
+            const selectedBrands = $('input[name="brand"]:checked').map(function () {
+                return this.value;
+            }).get();
+            const selectedColors = $('input[name="color"]:checked').map(function () {
+                return this.value;
+            }).get();
+            console.log(selectedBrands);
+            // Make an AJAX request to your product filter API
+            $.ajax({
+                url: '/product/api/filter-products/',
+                method: 'GET',
+                dataType: 'json',
+                data: {
+                    category: selectedCategory,
+                    brand: selectedBrands,
+                    color: selectedColors,
+                },
+                success: function (data) {
+                    // Handle the filtered product data here, e.g., update the UI
+                    $('#products').html(data.product_list_html);
+                },
+                error: function (error) {
+                    console.error('Error fetching filtered products:', error);
+                },
+                complete: function (data) {
+                    console.log("Data sent to server:", data);
+                }
+            });
+
+        }
+
+
+
+        $(document).ready(function () {
+            filterProducts();
+
+            // Fetch filter options from the API
+            $.ajax({
+                url: '/product/api/filter-options/',
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    // Populate brand filter
+                    populateCheckboxes('#brandFilter', data.brands, 'brand');
+
+                    // Populate color filter
+                    populateCheckboxes('#colorFilter', data.colors, 'color');
+                },
+                error: function (error) {
+                    console.error('Error fetching filter options:', error);
+                }
+            });
+
+            
+
+            // Bind the input event listener to the search input only after user interaction
+            $('#product-search').on('input', function () {
+                searchProducts();
+            });
+            
+            // Bind event listeners to filter products when category, brand, or color changes
+            $('#category').on('change', filterProducts);
+            $('#brandFilter').on('change', 'input[name="brand"]', filterProducts);
+            $('#colorFilter').on('change', 'input[name="color"]', filterProducts);
+
+        });
+
+</script>
 {% endblock body%}
