@@ -1,4 +1,4 @@
-# Django #
+# Django 
 *.log
 *.pot
 *.pyc
@@ -6,7 +6,7 @@ __pycache__
 db.sqlite3
 media
 
-# Backup files # 
+# Backup files 
 *.bak
 
 # Byte-compiled / optimized / DLL files
@@ -14,14 +14,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-#media files
+# Media files
 /media/
 
 # Environments
 env/
 .env 
 
-# Visual Studio Code # 
+# Visual Studio Code 
 .vscode/* 
 !.vscode/settings.json 
 !.vscode/tasks.json 
