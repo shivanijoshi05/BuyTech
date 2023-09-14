@@ -1,4 +1,4 @@
-## BuyTech
+# BuyTech
 E-commerce website for Mobile/Laptop with following features:
 
 - User Login/Register 
@@ -10,10 +10,10 @@ E-commerce website for Mobile/Laptop with following features:
 - Purchase/Receipt Options 
 - Payment option with paypal
 
-# Technology used:
+## Technology used:
 - Python, Django, HTML, CSS, Jquery
 
-# Installation
+## Installation
 
 **Step 1:** Clone the repository.
 
@@ -41,6 +41,21 @@ python3 manage.py createsuperuser
 ```bash
 python3 manage.py runserver
 ```
+
+## Setting Environment Variables
+
+This Django project relies on environment variables for configuration. Before you can run the application, make sure you have set the following environment variables:
+
+### 1. Secret Key
+
+The Django application requires a sfew environment variables to be set in .env file:
+```bash
+DJANGO_ENV = 'development'
+EMAIL_HOST_USER = 'example@gmail.com'
+EMAIL_HOST_PASSWORD = 'password'
+DEFAULT_FROM_EMAIL = 'example@gmail.com'
+```
+
 ## Contributing
 
 If you'd like to contribute, please follow these steps:
