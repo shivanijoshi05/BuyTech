@@ -1,16 +1,17 @@
 {% extends "customer/base.html" %}
 {%load static%}
+
 {%block title%}Cart {%endblock title%}
 
 {%block body%}
-{%if messages or response.messages%}
-<div class="alert alert-success my-0" role="alert">
+
+
+<div class="alert my-0 {% if message.tags == success and messages %} alert-success {%elif message.tags == "error"  %} alert-danger {%else%}{%endif%}" role="alert">
   {% for message in messages %}
   <small {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</small>
   {% endfor %}
-  
 </div>
-{%endif%}
+
 <section class="h-100">
   <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
@@ -22,8 +23,7 @@
 
               <div class="col">
                 <h5 class="mb-3"><a href="/" class="text-body"><i
-                      class="fas fa-long-arrow-alt-left me-2"></i>Continue
-                    shopping</a></h5>
+                      class="fas fa-long-arrow-alt-left me-2"></i>Continue shopping</a></h5>
                 <hr>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -33,7 +33,7 @@
                   </div>
                 </div>
                 {%for item in cart_items %}
-                <div class="card mb-3 cart-item">
+                <div class="card mb-3 cart-item" data-product-id="{{item.product.id}}">
                   <div class="card-body">
                     <div class="d-flex justify-content-between">
                       <div class="d-flex flex-row align-items-center">
@@ -64,9 +64,6 @@
                       </div>
                       </form>
                       </div>
-
-
-
                     </div>
                   </div>
                 </div>
@@ -78,46 +75,43 @@
 
 
             {%if cart.total > 0 %}
-            <div id="coupon-container" style="display: none;">
+            <div id="coupon-container" {%if cart.coupon_use%}  style="display: none; "{%endif%}>
               <div class="col-md-4 my-3">
-                <form method="POST" action="{% url 'apply_coupon' None %}">
+                <form id="coupon-form" method="POST">
                   {% csrf_token %}
                   {{ coupon_form.as_p }}
-                  <button class="btn btn-dark mb-3" type="submit">Apply</button>
-
+                  <button class="btn btn-dark mb-3" type="submit">Apply Coupon</button>
                 </form>
-                <p>Available Coupons: </p>
-                {%for coupon in coupons %}
-                <a href="{% url 'apply_coupon' coupon.code %}" class="text-decoration-none" style="color:black;">
+                
+                <p>Available Coupons:</p>
+                {% for coupon in coupons %}
+                <a href="#" class="text-decoration-none coupon-button" data-coupon-code="{{ coupon.code }}" style="color:black;">
                   <div class="d-flex border my-2">
                     <div class="justify-content-between my-2 mx-2">
                       <span>Promo code: </span>
-                      <span class="border border-succuess rounded px-2">{{coupon.code}}</span>
+                      <span class="border border-success rounded px-2">{{ coupon.code }}</span>
                     </div>
                   </div>
                 </a>
-               
-                {%endfor%}
+                {% endfor %}
+
               </div>
             </div>
             {%endif%}
-            {% if cart.coupon_use.coupon %}
-            <div class="d-flex my-2" >
-              <div class="justify-content-between mx-2" id="coupon-info" >
+            <div id="coupon-info" {% if not cart.coupon_use %}style="display: none;"{% endif %}>
+              <div class="justify-content-between mx-2">
                 <span>Coupon Used: </span>
                 <span class="border border-succuess rounded px-2 py-2"  class="clickable">
-                  {{cart.coupon_use.coupon.code}} 
+                  <span id="coupon-code">{{cart.coupon_use.coupon.code}}</span>
                   <span id="remove-coupon" class="clickable" aria-hidden="true">&times;</span>
                 </span>
-                 
               </div>
             </div>
-            {% endif %}
             {%if cart.total > 0 %}
             <hr class="my-4">
             <div class="d-flex justify-content-between">
               <p class="mb-2">Total MRP</p>
-              <p class="mb-2">$ {{cart.total}}</p>
+              <p class="cart-total mb-2">$ {{cart.total}}</p>
             </div>
             
             <div class="d-flex justify-content-between">
@@ -150,85 +144,141 @@
   </div>
   </div>
 </section>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'js/jquery.min.js'%}"></script>
+
 <script>
   $(document).ready(function () {
-    const hasCoupon = '{{cart.coupon_use}}';
-    //console.log(hasCoupon);
-    if (hasCoupon == 'None') {
-      $('#coupon-container').show();
+    $("#remove-coupon").click(function () {
+      var cartId = '{{ cart.id }}';
+      $.ajax({
+        type: 'POST',
+        url: "{% url 'remove_coupon' %}",
+        data: {
+          cart_id: cartId,
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function (response) {
+          $('#coupon-container').show();
+          $('#coupon-info').hide(); // Hide coupon info on coupon removal
+          $('.success').text(response.message);
+          $('.cart-total').text('$' + response.total);
+          $('.coupon-discount').text('$' + response.coupon_discount);
+          $('.discount-amount').text('$' + response.discount_amount);
+        },
+        error: function () {
+          // Handle error
+        }
+      });
+    });
+
+    // Function to apply the coupon via AJAX
+    function applyCoupon(code) {
+      var csrfToken = "{{ csrf_token }}";
+      var url = "{% url 'apply_coupon' 0 %}".replace("0", code);
+
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: {
+          csrfmiddlewaretoken: csrfToken,
+          code: code
+        },
+        success: function (response) {
+          if (response.success) {
+            $('#coupon-info').show(); // Show coupon info on successful application
+            $('#coupon-container').hide();
+            $('#coupon-info').find('#coupon-code').text(code);
+            $('.success').text(response.message);
+            $('.cart-total').text('$' + response.total);
+            $('.coupon-discount').text('$' + response.coupon_discount);
+            $('.discount-amount').text('$' + response.discount_amount);
+          } else {
+            // Coupon application failed
+            // Display an error message
+          }
+        },
+        error: function () {
+          // Handle error
+        }
+      });
     }
 
-    $("#remove-coupon").click(function () {
-    var cartId = '{{ cart.id }}';
-    $.ajax({
-      type: 'POST',
-      url: "{% url 'remove_coupon' %}", 
-      data: {
-        cart_id: cartId,
-        csrfmiddlewaretoken: '{{ csrf_token }}'
-      },
-      success: function (response) {
-        $('#coupon-info').remove();
-        $('#coupon-container').show();
-        $('.success').text(response.message)
-        $('.coupon-discount').text('$' + response.coupon_discount);
-        $('.discount-amount').text('$' + response.discount_amount);
-        console.log(response.coupon_discount);
-        console.log(response.discount_amount)
-
-      },
-      error: function () {
-        // Handle error
-      }
+    // Add an event listener for the coupon form submission
+    $("#coupon-form").submit(function (event) {
+      event.preventDefault(); // Prevent the default form submission
+        var couponCode = $(this).find("#id_code").val(); // Get the coupon code
+        applyCoupon(couponCode); // Call the applyCoupon function
     });
-  });
-  
+
+    // Add an event listener for coupon button clicks
+    $(".coupon-button").click(function (event) {
+        event.preventDefault();
+        var couponCode = $(this).data("coupon-code"); // Get the coupon code from data attribute
+        applyCoupon(couponCode); // Call the applyCoupon function
+    });
+
+
     $(".decrease-quantity").click(function () {
+      event.preventDefault();
       var product_id = $(this).closest(".remove-cart-item-form").find(".product-id").val();
-      updateCartItemQuantity(product_id, -1,false);
+      updateCartItemQuantity(product_id, -1, false);
     });
 
     $(".increase-quantity").click(function () {
+        event.preventDefault(); 
       var product_id = $(this).closest(".remove-cart-item-form").find(".product-id").val();
-      updateCartItemQuantity(product_id, 1,false);
-    });
-      $(".remove-cart-item").click(function () {
-      var product_id = $(this).closest(".remove-cart-item-form").find(".product-id").val();
-      updateCartItemQuantity(product_id, 0,true);
+      updateCartItemQuantity(product_id, 1, false);
     });
 
-    function updateCartItemQuantity(product_id, change, remove=false) {
-      var csrfToken = "{{ csrf_token }}";
-      var url = "{% url 'update_cart_item_quantity' 0 %}".replace("0", product_id);
-      
-      $.ajax({
-        url: url,
-        type: "POST",
-        data: {
-          csrfmiddlewaretoken: csrfToken,
-          quantity: change,
-          remove: remove
-        },
-        success: function (data) {
-          if (data.success) {
-            if(data.remove){
-              $('.cart-item[data-product-id="' + product_id + '"]').remove();
-            }else{
-              $('.item-quantity[data-product-id="' + product_id + '"]').text(data.quantity);
+    $(".remove-cart-item").click(function () {
+      event.preventDefault();
+      var product_id = $(this).closest(".remove-cart-item-form").find(".product-id").val();
+      updateCartItemQuantity(product_id, 0, true);
+    });
+
+    function updateCartItemQuantity(product_id, change, remove = false) {
+    var csrfToken = "{{ csrf_token }}";
+    var url = "{% url 'update_cart_item_quantity' 0 %}".replace("0", product_id);
+
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: {
+        csrfmiddlewaretoken: csrfToken,
+        quantity: change,
+        remove: remove
+      },
+      success: function (response) {
+        if (response.success) {
+          $('.cart-total').text('$' + response.total);
+          $('.coupon-discount').text('$' + response.coupon_discount);
+          $('.discount-amount').text('$' + response.discount_amount);
+          if (response.remove) {
+            $('.cart-item[data-product-id="' + product_id + '"]').remove();
+            if ($('.cart-item').length === 0) {
+               $("#remove-coupon").click();
+               window.location.href = '/cart/';
             }
-            
+
           } else {
-            // Handle error if needed
-            console.log('quantity', data.message);
+            var itemQuantity = $('.cart-item[data-product-id="' + product_id + '"]').find('.item-quantity');
+            itemQuantity.text(response.quantity);
           }
-        },
-        error: function (xhr, textStatus, errorThrown) {
-          console.log('AJAX request failed:', errorThrown);
+        } else {
+          // Handle error if needed
+          $(".alert").addClass("alert-danger");
+          $(".alert").empty();
+          $(".alert").append('<small class="error">'+response.message+'</small>');
+          console.log(response.message);
         }
-      });
-      console.log('Failed');
-    }
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        console.log('AJAX request failed:', errorThrown);
+      }
+    });
+  }
 });
+
+
 </script>
 {% endblock body%}

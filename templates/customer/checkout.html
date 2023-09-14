@@ -107,7 +107,7 @@
         paypal.Buttons({
             style: {
                 shape: 'rect',
-                color: 'gold',
+                color: 'black',
                 layout: 'vertical',
                 label: 'paypal',
             },
@@ -116,7 +116,7 @@
                 var isFormFilled = $('#shipping-details').is(':visible');
                 if (isFormFilled) {
                     return actions.order.create({
-                        purchase_units: [{ "amount": { "currency_code": "USD", "value": '{{cart.total}}' } }],
+                        purchase_units: [{ "amount": { "currency_code": "USD", "value": '{{cart.discount_amount}}' } }],
                         application_context: {
                             shipping_preference: 'NO_SHIPPING'
                         },
@@ -131,10 +131,9 @@
             onApprove: function (data, actions) {
                 return actions.order.capture().then(function (orderData) {
                     
-                
                     $.ajax({
                         type: 'POST',
-                        url: '/create_order/',  // Replace with the actual URL
+                        url: '/order/create/',  
                         data: {
                             cart_id: '{{cart.id}}',
                             billing_address: null,
@@ -144,7 +143,7 @@
                         },
                         success: function (response) {
                             if (response.success) {
-                                window.location.href = '/your_orders/';
+                                window.location.href = '/your-orders/';
                                 console.log('Order placed');
                             } else {
                                 console.log('Failed to update order status.',message);
@@ -171,7 +170,7 @@
 
 
         }).render('#paypal-button-container');
-    }
+        }
     initPayPalButton();
 </script>
 
@@ -231,7 +230,6 @@
                     $('#' + id + '_error').html('<small style="color: red">Enter a valid email address</small>');
                     return false;
                 }
-                // Check pin code format if the field is pin code
                 if (input.attr('name') === 'pin_code' && !isValidPinCode(input.val())) {
                     $('#' + id + '_error').html('<small style="color: red">Enter a valid pin code</small>');
                     isValid = false;
@@ -241,7 +239,7 @@
 
         $('#save-address').click(function ()  {
             if ($('#shipping-address-form').is(':visible')) {
-                $('#form-address').submit(); // Submit the form
+                $('#form-address').submit();
             } else {
                 $('#shipping-details').toggle();
                 $('#shipping-address-form').toggle();
@@ -259,10 +257,9 @@
                 $saveEditButton.text('Edit');
             }
             
-            $('.error-message').empty(); // Clear existing error messages
-            var isValid = true; // Set isValid to true initially
-
-           $('#form-address input').each(function () {
+            $('.error-message').empty(); 
+            var isValid = true; 
+            $('#form-address input').each(function () {
                 if (!validateField($(this))) {
                     isValid = false;
                     return false;
@@ -271,8 +268,7 @@
             });
 
             if (isValid) {
-                // If form is not valid, prevent default behavior and show errors
-                 $('#form-address').submit(); 
+                $('#form-address').submit(); 
             }
         });
     });

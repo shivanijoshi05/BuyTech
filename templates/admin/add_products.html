@@ -10,11 +10,11 @@
     <form method="POST" enctype="multipart/form-data" id="form">
         {% csrf_token %}
             <label for="Mobile"class="form-label">
-                <input class="form-check-input" type="radio" name="category-input" id="Mobile" value="Mobile" {% if category == "Mobile" %} checked {% endif %}>
+                <input class="form-check-input" type="radio" name="category-input" id="Mobile" value="Mobile" {% if category == "Mobile" or not category %} checked {% endif %} {% if category %} disabled {% endif %}>
                 Mobile
             </label>
             <label for="Laptop" class="form-label">
-                <input class="form-check-input" type="radio" name="category-input" id="Laptop" value="Laptop" {% if category == "Laptop" %} checked {% endif %}>
+                <input class="form-check-input" type="radio" name="category-input" id="Laptop" value="Laptop" {% if category == "Laptop" %} checked {% endif %} {% if category %} disabled {% endif %}>
                 Laptop
             </label>
 
@@ -32,8 +32,8 @@
                     <br />
                     {% endfor %}
                 </div>
-               
-                <div id="mobile-form" style="display:none">
+               {% if mobile_form %}
+                <div id="mobile-form" style = "{% if category == 'Mobile' or not category %} display:block; {% else %} display:none; {% endif %} ">
                     {% for field in mobile_form %}
                     <label class="form-label">{{ field.label }}</label>
                     <div class="controls">
@@ -45,8 +45,9 @@
                     <br />
                     {% endfor %}
                 </div>
-
-                <div id="laptop-form" style="display:none;">
+                {%endif%}
+                {% if laptop_form %}
+                <div id="laptop-form" style="{% if category == 'Laptop' %} display:block; {% else %} display:none; {% endif %}">
                     {% for field in laptop_form %}
                     <label class="form-label">{{ field.label }}</label>
                     <div class="controls">
@@ -58,7 +59,7 @@
                     <br />
                     {% endfor %}
                 </div>
-                
+                {%endif%}
             </div>
         </div>
         <div class="col-8">
@@ -68,19 +69,22 @@
     </form>
 
 </div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'js/jquery.min.js'%}"></script>
 <script>
     $(document).ready(function () {
-        $("input[name='category-input']").on("change", function() {
-        var selectedCategory = $(this).val();
-            if (selectedCategory === "Mobile") {
+        // Initial category selection
+        var selectedCategory = $("input[name='category-input']:checked").val();
+
+        // Function to enable/disable forms based on category
+        function toggleForms(category) {
+            if (category === "Mobile") {
                 $("#mobile-form").show();
                 $("#laptop-form").hide();
                 // Enable Mobile form fields
                 $("#mobile-form input").prop("disabled", false);
                 // Disable Laptop form fields
                 $("#laptop-form input").prop("disabled", true);
-            } else if (selectedCategory === "Laptop") {
+            } else if (category === "Laptop") {
                 $("#mobile-form").hide();
                 $("#laptop-form").show();
                 // Enable Laptop form fields
@@ -88,7 +92,17 @@
                 // Disable Mobile form fields
                 $("#mobile-form input").prop("disabled", true);
             }
-    });
+        }
+
+        // Initial setup
+        toggleForms(selectedCategory);
+
+        // Change event listener
+        $("input[name='category-input']").on("change", function () {
+            var selectedCategory = $(this).val();
+            toggleForms(selectedCategory);
+        });
     });
 </script>
+
 {%endblock body%}

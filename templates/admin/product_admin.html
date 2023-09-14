@@ -11,4 +11,19 @@
     {% endfor %}
 </div>
 {%endif%}
+<h2 class="text-center my-3"> My Products </h2>
+{% include 'product_list.html' with products=products %}
+
+<style>
+    section {
+        margin: 20px;
+    }
+
+    @media (max-width: 768px) {
+        section {
+            justify-content: center;
+        }
+    }
+</style>
+
 {%endblock body%}
