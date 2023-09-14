@@ -1,21 +1,18 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
 from djangoapps.cart.forms import ShippingAddressForm
 from djangoapps.cart.models import Cart, ShippingAddress
 from djangoapps.order.models import Order, OrderItem
 from djangoapps.product.models import Product
+
 from .decorators import admin_login_required
-from django.shortcuts import get_object_or_404, redirect, render
 from .forms import CouponForm
-from .models import (
-    Contact,
-    Coupon,
-)
+from .models import Contact, Coupon
 
-# customer site views
-
-
+""" customer site views """
 # home page
 def home(request):
     return render(request, "customer/home.html")
@@ -125,13 +122,13 @@ def checkout(request):
             "form": form,
             "cart_items": cart_items,
             "shipping_address": shipping_address,
+            'paypal_client_id': settings.PAYPAL_CLIENT_ID,
         },
     )
 
 
-# product admin site
 
-
+""" product admin site """
 # dashboard for admin
 @admin_login_required
 def product_admin(request):
