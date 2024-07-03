@@ -36,6 +36,22 @@ pip install -r requirements.txt
 python3 manage.py makemigrations
 python3 manage.py migrate
 ```
+## Setting Environment Variables
+
+This Django project relies on environment variables for configuration. Before you can run the application, make sure you have set the following environment variables in .env file:
+
+```bash
+DJANGO_ENV = 'development'
+PAYPAL_CLIENT_ID = 'your_client_id'
+EMAIL_HOST_USER = 'example@gmail.com'
+EMAIL_HOST_PASSWORD = 'password'
+DEFAULT_FROM_EMAIL = 'example@gmail.com'
+PSQL_ROOT_PASSWORD = 'password'
+PSQL_DATABASE = 'buyTech'
+PSQL_USER = 'postgres'
+PSQL_PASSWORD = 'password'
+```
+
 **Step 4:** Create superuser
 ```bash
 python3 manage.py createsuperuser
@@ -43,17 +59,6 @@ python3 manage.py createsuperuser
 **Step 5:** Start server
 ```bash
 python3 manage.py runserver
-```
-
-## Setting Environment Variables
-
-This Django project relies on environment variables for configuration. Before you can run the application, make sure you have set the following environment variables in .env file:
-
-```bash
-DJANGO_ENV = 'development'
-EMAIL_HOST_USER = 'example@gmail.com'
-EMAIL_HOST_PASSWORD = 'password'
-DEFAULT_FROM_EMAIL = 'example@gmail.com'
 ```
 
 ## Contributing

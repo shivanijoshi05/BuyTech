@@ -5,13 +5,12 @@
 
 {%block body%}
 
-{%if messages%}
-<div class="alert alert-success my-0" role="alert">
+
+<div class="alert my-0 {% if message.tags == success and messages %} alert-success {%elif message.tags == "error"  %} alert-danger {%else%}{%endif%}" role="alert">
   {% for message in messages %}
   <small {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</small>
   {% endfor %}
 </div>
-{%endif%}
 
 
 <section class="h-100">
@@ -20,9 +19,41 @@
       <div class="col-md-10">
         <div class="card" data-order-id ="{{order.id}}"id="order-summary">
           <div class="card-body">
+              <!-- Return/Exchange Modal -->
+              <div class="modal fade" id="returnExchangeModal" tabindex="-1" role="dialog" aria-labelledby="returnExchangeModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="returnExchangeModalLabel">Return/Exchange</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true"><i class="fas fa-times"></i></span>
+                    </button>
+                    </div>
+                    <div class="modal-body py-2">
+                      <form id="returnExchangeForm">
+                        <div class="form-group my-3">
+                          <label for="feedback">Reason for Return/Exchange</label>
+                          <textarea class="form-control" id="feedback" name="feedback" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                          <label for="return_status">Return/Exchange status</label>
+                          <select class="form-control" id="returnStatus" name="return_status">
+                            <option value="Return">Return</option>
+                            <option value="Exchange">Exchange</option>
+                          </select>
+                        </div>
+                        <input type="hidden" id="orderItemId" name="order_item_id">
+
+                        <button type="submit" class="btn btn-dark my-3">Submit</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
             <div class="row">
-
+            
               <div class="col">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                   <div>
@@ -54,7 +85,7 @@
 
 
                       </div>
-                      {% if request.user.user_type == "Admin" and item.product.product_admin == request.user %}
+                      {% if request.user.user_type == "Admin" %}
                       <div class="d-flex justify-content-between align-items-center">
                         <div>
                           <p class="mb-0">Status:</p>
@@ -68,6 +99,13 @@
                         </select>
                         </div>
                       </div>
+                        {% if item.status == "Delivered" %}
+                          <div class="d-flex justify-content-end my-2">
+                            {% if item.return_status%}
+                            <small class="alert-sucess" style="color: green;">{{item.return_status}} Initiated</small>
+                            {% endif %}
+                          </div>
+                        {% endif %}
                       {%else%}
                       <p class="order-status" style="display: none;">{{ item.status }}</p>
                       
@@ -86,8 +124,19 @@
                         <div class="d-flex flex-column align-items-center"><span>Shipped</span></div>
                         <div class="d-flex flex-column align-items-end"><span>Delivered</span></div>
                       </div>
+                        {% if item.status == "Delivered" %}
+                          <div class="d-flex justify-content-end my-2">
+                            {% if item.return_status is None %}
+                              <a href="javascript:void(0);" class="text-decoration-none return-exchange-btn" data-order-item-id="{{ item.id }}">
+                                <button class="btn btn-outline-dark">Return/Exchange</button>
+                              </a>
+                            {% else %}
+                              <small class="alert-sucess" style="color: green;">{{item.return_status}} Initiated</small>
+                            {% endif %}
 
+                          </div>
 
+                        {% endif %}
                       {% endif %}
                     </div>
                   </div>
@@ -153,12 +202,10 @@
     $('.status-select').change(function () {
       var orderItemId = $(this).closest('#order-item').data('order-item-id');
       var status = $(this).val();
-      console.log(orderItemId);
-      console.log(status)
 
       $.ajax({
         type: 'POST',
-        url: '{% url "update_order_status" %}',  // Update with the actual URL
+        url: '{% url "update_order_status" %}',
         data: {
           'csrfmiddlewaretoken': '{{ csrf_token }}',
           'order_item_id': orderItemId,
@@ -195,7 +242,40 @@
         }
       });
     });
-
+    $('.return-exchange-btn').click(function () {
+      var orderItemId = $(this).data('order-item-id');
+      $('#orderItemId').val(orderItemId);
+      $('#returnExchangeModal').modal('show');
+    });
+    $('.close').click(function () {
+      $('#returnExchangeModal').modal('hide');
+    });
+    
+    $('#returnExchangeForm').submit(function (event) {
+      event.preventDefault();
+      var orderItemId = $(this).find('#orderItemId').val();
+      var returnStatus = $(this).find('#returnStatus').val();
+      var feedback = $(this).find('#feedback').val();
+      $.ajax({
+        type: 'POST',
+        url: '{% url "update_order_status" %}',
+        data: {
+          'csrfmiddlewaretoken': '{{ csrf_token }}',
+          'order_item_id': orderItemId,
+          'feedback': feedback,
+          'return_status':returnStatus,
+        },
+        success: function (response) {
+            $('#returnExchangeModal').modal('hide');
+            $(".alert").addClass("alert-success");
+            $(".alert").empty();
+            $(".alert").append('<small class="success">' + response.message + '</small>');
+          console.log(response.message);
+        },
+        error: function () {
+        }
+      });
+    });
   });
 </script>
 <style>

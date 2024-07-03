@@ -77,11 +77,11 @@ def detail_product_view(request, product_id):
         base_template = 'admin/admin_base.html'
     else:
         base_template = 'customer/base.html'
-    product = get_object_or_404(Product, pk = product_id)
+    product = Product.objects.filter(pk = product_id).first()
     if product.category == "Mobile":
-        detail_product = get_object_or_404(Mobile, product=product)
+        detail_product = Mobile.objects.filter(product=product).select_related('product').first()
     else:
-        detail_product = get_object_or_404(Laptop, product=product)
+        detail_product = Laptop.objects.filter(product=product).select_related('product').first()
 
     return render(request, "product_detail.html", {'detail_product': detail_product, 'base_template': base_template, 'user': request.user.user_type})
 
@@ -97,7 +97,7 @@ def delete_product(request, product_id):
     product.delete()
     detail_product.delete()
     messages.success(request, "Product is deleted.")
-    return redirect("view_products")
+    return redirect("product_admin")
 
 
 # search API
@@ -150,13 +150,13 @@ class FilterProductsAPIView(APIView):
         if brands:
             brand_filter = Q()
             for brand in brands:
-                brand_filter |= Q(mobile__brand=brand) | Q(laptop__brand=brand)
+                brand_filter |= Q(mobiles__brand=brand) | Q(laptops__brand=brand)
             queryset = queryset.filter(brand_filter)
         # Apply filters based on selected colors
         if colors:
             color_filter = Q()
             for color in colors:
-                color_filter |= Q(mobile__color=color) | Q(laptop__color=color)
+                color_filter |= Q(mobiles__color=color) | Q(laptops__color=color)
             queryset = queryset.filter(color_filter)
 
         # Render the filtered products as HTML

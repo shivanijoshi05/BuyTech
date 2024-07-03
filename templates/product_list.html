@@ -4,14 +4,14 @@
 <section style="display: flex; flex-direction: row; flex-wrap: wrap; margin:0;">
 {% for product in products %}
 <a href="{% url 'detail_product_view' product.id %}" class="text-decoration-none">
-    <div class="card" style="width: 17rem; margin:20px;">
+    <div class="card" style="width: 16rem; margin:8px;">
 
         <div class="bg-image hover-overlay ripple ripple-surface ripple-surface-light" data-mdb-ripple-color="light">
             <div class="card-img-container mt-2" style=" display: flex;
                   justify-content: center;
                   align-items: center;
                   height: 200px;"><img src="{{ product.image.url }}" class="card-img-top mx-auto img-fluid"
-                    style="border-top-left-radius: 15px; border-top-right-radius: 15px; width:200px; height:200px;">
+                    style="border-top-left-radius: 15px; border-top-right-radius: 15px; width:180px; height:180px;">
                 <a href="#!">
                     <div class="mask"></div>
                 </a>
@@ -40,7 +40,7 @@
                         class="btn btn-outline-dark mx-3">View</button></a>
                 {% if product.product_admin != request.user %}
                 <a href="{% url 'add_to_cart' product.id %}" class="text-decoration-none">
-                    <button class="btn btn-outline-dark mx-3">Add to Cart</button>
+                    <button class="btn btn-outline-dark mx-2">Add to Cart</button>
                 </a>
                 {%endif%}
             </div>

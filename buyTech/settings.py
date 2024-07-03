@@ -11,9 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
-import sys
 from pathlib import Path
-from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,10 +36,12 @@ INSTALLED_APPS = [
     'djangoapps.order',
     'djangoapps.product',
     'djangoapps.user_account',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -59,8 +59,12 @@ WSGI_APPLICATION = 'buyTech.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('PSQL_DATABASE'),
+        'USER': os.environ.get('PSQL_USER'),
+        'PASSWORD': os.environ.get('PSQL_PASSWORD'),
+        'HOST': 'psql', 
+        'PORT': '5432',
     }
 }
 
@@ -103,12 +107,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='') 
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', default='')  
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', default='') 
 
 # Load environment variables from .env file
-DJANGO_ENV = config('DJANGO_ENV', default='development')
+DJANGO_ENV = os.environ.get('DJANGO_ENV', default='development')
 
 if DJANGO_ENV == 'production':
     from .production import *
@@ -117,9 +121,22 @@ else:
     
 SECURE_CROSS_ORIGIN_OPENER_POLICY='same-origin-allow-popups'
 
-PAYPAL_CLIENT_ID = config('PAYPAL_CLIENT_ID',default='')
+PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID',default='')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+if DEBUG:
+    INTERNAL_IPS = [
+        '127.0.0.1',
+        'localhost'
+    ]
+    import mimetypes
+    mimetypes.add_type("application/javascript", ".js", True)
+    
+    def show_toolbar(request):                                     
+        return True                                                
+    DEBUG_TOOLBAR_CONFIG = {                                       
+        "SHOW_TOOLBAR_CALLBACK" : show_toolbar,                    
+    }                                                              

@@ -88,7 +88,7 @@ def edit_profile(request):
     if request.method == 'POST':
         form = EditUserForm(request.POST, instance=request.user)
         profile_form = ProfileForm(
-            request.POST, request.FILES, instance=request.user.profile)
+            request.POST, request.FILES, instance=request.user.user_profile)
         if form.is_valid() and profile_form.is_valid():
             user_form = form.save()
             custom_form = profile_form.save(False)
@@ -97,7 +97,7 @@ def edit_profile(request):
             return redirect('profile')
     else:
         form = EditUserForm(instance=request.user)
-        profile_form = ProfileForm(instance=request.user.profile)
+        profile_form = ProfileForm(instance=request.user.user_profile)
         base_template = ('admin/admin_base.html' if request.user.user_type == "Admin" else 'customer/base.html')
         context = {"form": form, "profile_form": profile_form, "base_template": base_template}
         return render(request, 'edit_profile.html', context=context)

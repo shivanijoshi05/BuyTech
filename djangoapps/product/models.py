@@ -20,7 +20,7 @@ class Product(models.Model):
 
     product_admin = models.ForeignKey(
         CustomUser,  on_delete=models.CASCADE,
-        default=None)
+        default=None, related_name='product_admin')
     name = models.CharField(max_length=60, unique=True)
     price = models.IntegerField(default=0)
     stock = models.IntegerField(default=0)
@@ -42,7 +42,7 @@ class Product(models.Model):
     @staticmethod
     def get_products_by_admin(product_admin):
         if product_admin:
-            return Product.objects.filter(product_admin=product_admin)
+            return Product.objects.filter(product_admin=product_admin).select_related('product_admin')
         
     @staticmethod
     def get_products_by_id(id):
@@ -70,7 +70,7 @@ class Mobile(models.Model):
         ('Xiaomi', 'Xiaomi'),
         ('Google', 'Google'),
     ]
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="mobiles")
     brand = models.CharField(max_length=50, choices=BRAND_CHOICES)
     screen_size = models.DecimalField(max_digits=4, decimal_places=2)
     os = models.CharField(max_length=50)
@@ -98,7 +98,7 @@ class Laptop(models.Model):
         ('Acer', 'Acer'),
     ]
     product = models.ForeignKey(
-        Product, on_delete=models.CASCADE)
+        Product, on_delete=models.CASCADE, related_name="laptops")
     brand = models.CharField(max_length=50, choices=BRAND_CHOICES)
     screen_size = models.DecimalField(max_digits=4, decimal_places=2)
     processor = models.CharField(max_length=50)

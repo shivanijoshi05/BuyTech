@@ -3,7 +3,6 @@ from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 
 from djangoapps.cart.models import Cart, CartItem, ShippingAddress
-from djangoapps.home.decorators import admin_login_required
 from .models import Order, OrderItem
 from djangoapps.product.models import Product
 
@@ -41,28 +40,41 @@ def create_order(request):
 # detail order view for past orders
 @login_required
 def detail_order_view(request, order_id):
-    order = get_object_or_404(Order, pk=order_id)
-    if request.user.user_type == "Admin":
+    order = Order.objects.filter(pk=order_id).first()
+    user = request.user  
+    if user.user_type == "Admin":
         base_template = 'admin/admin_base.html'
-        admin_products = Product.objects.filter(product_admin=request.user)
-        order_items = OrderItem.objects.filter(order=order,product__in=admin_products)
-        if not order_items.exists():
-            order_items = OrderItem.objects.filter(order=order)
+        admin_products = Product.get_products_by_admin(user)
+        order_items = OrderItem.objects.filter(order=order,product__in=admin_products).select_related('product')
+        # if not order_items.exists():
+        #     order_items = OrderItem.objects.filter(order=order).select_related('product')
     else:
         base_template = 'customer/base.html'
-        order_items = OrderItem.objects.filter(order=order)
+        order_items = OrderItem.objects.filter(order=order).select_related('product')
     order_total = OrderItem.calculate_order_items_total(order_items)
-    return render(request, 'order_detail.html', {'base_template':base_template,'order': order, 'order_items': order_items, 'order_total':order_total})
+    return render(request, 'order_detail.html', {'base_template':base_template,'order': order, 'order_items': order_items, 'order_total':order_total,'user':user})
 
 
 # update the order status
-@admin_login_required
+@login_required
 def update_order_status(request):
-    if request.method != 'POST' or request.user.user_type != 'Admin':
-        return JsonResponse({'message': 'Invalid request'}, status=400)
-    order_item_id = request.POST.get('order_item_id')
-    status = request.POST.get('status')
-    order_item = OrderItem.objects.get(id=order_item_id)
-    order_item.status = status
-    order_item.save()
-    return JsonResponse({'message': 'Status updated successfully'}, status=200)
+    if request.method == 'POST':
+        order_item_id = request.POST.get('order_item_id')
+        order_item = OrderItem.objects.get(id=order_item_id)
+        if request.user.user_type != 'Admin':
+            product = Product.objects.get(pk=order_item.product.id)
+            return_status = request.POST.get('return_status')
+            feedback = request.POST.get("feedback")
+            order_item.return_status = return_status
+            order_item.feedback = feedback
+            product.stock += order_item.quantity
+            product.save()
+            order_item.save()
+            response_data = {'success': True, 'message': 'Return/exchange request placed successfully.'}
+        else:
+            status = request.POST.get('status')
+            order_item.status = status
+            order_item.save()
+            response_data = {'success': True, 'message': 'Order status changed successfully.'}
+        return JsonResponse(response_data, status=200)
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)

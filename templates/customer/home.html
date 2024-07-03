@@ -13,19 +13,16 @@
 {%endif%}
     <div class="row px-0 mx-0">
         <div class="row px-0 mx-0">
-            <div class="col-md-3 my-4">
+            <h2 class="text-center my-3"> Products </h2>
+            <div class="col-md-3 my-0">
                 <!-- Filter Button (Responsive) -->
-                <button class="btn btn-dark d-block  mx-2" type="button" data-bs-toggle="collapse" data-bs-target="#filterColumn">
+                <button class="btn btn-dark d-block mx-2" type="button" data-bs-toggle="collapse" data-bs-target="#filterColumn">
                     <i class="fas fa-filter"></i> Filter
                 </button>
             </div>
-            <div class="col-md-9">
-                <h2 class="text-center my-3"> Products </h2>
-            </div>
-            
             <div class="row px-0 mx-0">
                 <!-- Filter Column (Responsive) -->
-                <div class="col-md-3 my-3  collapse d-md-block" id="filterColumn">
+                <div class="col-md-3 my-1 collapse d-md-block" id="filterColumn">
                     <div class="card card-body mx-2" style="margin-top: 5px;">
                         <div class="row mb-3 mx-2">
                             <h5 class="px-0">Category</h5>
@@ -38,47 +35,30 @@
                         <div class="row mb-3 mx-2">
                             <h5 class="px-0">Brand</h5>
                             <div id="brandFilter">
-                
                             </div>
                         </div>
                         <div class="row mb-3 mx-2">
                             <h5 class="px-0">Color</h5>
                             <div id="colorFilter">
-                
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-9 mb-3">
-            
+                <div class="col-md-9 mb-3">  
                     <div id="products">
                     </div>
                 </div>
                
             </div>
         </div>
-       
-        
     </div>
-    
 <style>
-    section {
-        margin: 20px;
+    section{ margin: 20px; }
+    @media (max-width: 768px){   
+        section{ justify-content: center; }
     }
-    
-      @media (max-width: 768px) {
-       
-        section {
-            justify-content: center;
-        }
-    }
-    .btn-filter {
-        margin-bottom: 10px;
-
-    }
-    #brandFilter,#colorFilter{
-        padding:0;
-    }
+    .btn-filter{ margin-bottom: 10px; }
+    #brandFilter,#colorFilter{ padding:0; }
 </style>
 
 <script src="{% static 'js/jquery.min.js'%}"></script>
@@ -111,14 +91,12 @@
         function populateCheckboxes(checkboxDivId, options, name) {
             const checkboxDiv = $(checkboxDivId);
             checkboxDiv.empty();
-
             options.forEach(option => {
                 const checkboxLabel = $('<label>', {
                     class: 'form-check-label d-block mb-2', // Add class for a block element
                     text: option,
                     for: name + '-' + option
                 });
-
                 const checkboxInput = $('<input>', {
                     class: 'form-check-input mx-2',
                     type: 'checkbox',
@@ -126,7 +104,6 @@
                     value: option,
                     id: name + '-' + option
                 });
-
                 checkboxLabel.prepend(checkboxInput);
                 checkboxDiv.append(checkboxLabel);
             });
@@ -140,7 +117,6 @@
             const selectedColors = $('input[name="color"]:checked').map(function () {
                 return this.value;
             }).get();
-            console.log(selectedBrands);
             // Make an AJAX request to your product filter API
             $.ajax({
                 url: '/product/api/filter-products/',
@@ -159,17 +135,13 @@
                     console.error('Error fetching filtered products:', error);
                 },
                 complete: function (data) {
-                    console.log("Data sent to server:", data);
                 }
             });
 
         }
 
-
-
         $(document).ready(function () {
             filterProducts();
-
             // Fetch filter options from the API
             $.ajax({
                 url: '/product/api/filter-options/',
@@ -178,7 +150,6 @@
                 success: function (data) {
                     // Populate brand filter
                     populateCheckboxes('#brandFilter', data.brands, 'brand');
-
                     // Populate color filter
                     populateCheckboxes('#colorFilter', data.colors, 'color');
                 },
@@ -186,14 +157,10 @@
                     console.error('Error fetching filter options:', error);
                 }
             });
-
-            
-
             // Bind the input event listener to the search input only after user interaction
             $('#product-search').on('input', function () {
                 searchProducts();
             });
-            
             // Bind event listeners to filter products when category, brand, or color changes
             $('#category').on('change', filterProducts);
             $('#brandFilter').on('change', 'input[name="brand"]', filterProducts);

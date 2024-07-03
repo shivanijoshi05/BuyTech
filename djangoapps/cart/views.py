@@ -6,16 +6,14 @@ from .models import Cart, CartItem
 from djangoapps.home.forms import CouponForm
 from djangoapps.home.models import Coupon
 from djangoapps.product.models import Product
-
+from django.db import transaction
 
 # cart view
 @login_required
 def cart(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
     cart.total = cart.get_cart_total()
-    cart.save()
-    
-    items = CartItem.objects.filter(cart=cart)
+    items = CartItem.objects.filter(cart=cart).select_related('product')
     coupons = Coupon.objects.all()
     coupon_form = CouponForm()
     coupon_discount = cart.get_discount()
@@ -26,6 +24,7 @@ def cart(request):
         "coupons": coupons,
         "coupon_form": coupon_form,
         "coupon_discount": coupon_discount,
+        "total_items": len(items),
     })
 
 
@@ -33,18 +32,20 @@ def cart(request):
 @login_required
 def add_to_cart(request, product_id):
     cart, created = Cart.objects.get_or_create(user=request.user)
-    product = get_object_or_404(Product, pk=product_id)
+    product = Product.objects.filter(pk=product_id).first()
     if product.in_stock:
-        item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        if not created:
-            item.quantity += 1
-            item.save()
-        product.stock -= 1
+        with transaction.atomic():
+            item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+            if not created:
+                item.quantity += 1
+                item.save()
+            product.stock -= 1
+            product.save()
+            cart.total = cart.get_cart_total()
     else:
         messages.error(request, "This product is out of stock.")
         return redirect("home")
-    product.save()
-    cart.total = cart.get_cart_total()
+    
     messages.success(request, "Added to cart.")
     return redirect("cart")
 
@@ -60,12 +61,13 @@ def update_cart_item_quantity(request, product_id):
 
         cart_item.quantity += new_quantity
         if request.POST.get("remove") == "true" or cart_item.quantity == 0:
-            if cart_item.quantity == 0:
-                product.stock -= new_quantity
-            else:
-                product.stock += cart_item.quantity
-            cart_item.delete()
-            product.save()
+            with transaction.atomic():
+                if cart_item.quantity == 0:
+                    product.stock -= new_quantity
+                else:
+                    product.stock += cart_item.quantity
+                cart_item.delete()
+                product.save()
             return JsonResponse(
                 {
                     "success": True,
@@ -77,9 +79,10 @@ def update_cart_item_quantity(request, product_id):
             )
 
         if (new_quantity > 0 and product.in_stock) or (new_quantity <= 0):
-            product.stock -= new_quantity
-            product.save()
-            cart_item.save()
+            with transaction.atomic():
+                product.stock -= new_quantity
+                product.save()
+                cart_item.save()
             return JsonResponse(
                 {
                     "success": True,

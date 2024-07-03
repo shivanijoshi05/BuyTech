@@ -100,7 +100,7 @@ class Profile(models.Model):
     A model to store additional details of a user such as profile image, mobile number, 
     bio, and address.
     """
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='user_profile')
     profile_img = models.ImageField(
         default='uploads/profiles/profile.png', upload_to='uploads/profiles')
     mobile = models.IntegerField(default=0)

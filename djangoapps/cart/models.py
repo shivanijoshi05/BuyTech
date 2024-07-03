@@ -22,25 +22,27 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Cart"
-
+    
+    @property
     def items(self):
-        return CartItem.objects.filter(cart=self)
-
+        return self.cart_items.select_related('product').all()
+    
+    @transaction.atomic
     def apply_coupon(self, coupon):
         if coupon:
             coupon_use, created = CouponUse.objects.get_or_create(user=self.user, coupon=coupon)
             if coupon_use.used < coupon.usage_limit:
                 try:
-                    with transaction.atomic():
-                        coupon_use.save()
-                        self.coupon_use = coupon_use
-                        self.discount_amount = coupon.calculate_discounted_total(self.total)
-                        self.save()
+                    coupon_use.save()
+                    self.coupon_use = coupon_use
+                    self.discount_amount = coupon.calculate_discounted_total(self.total)
+                    self.save()
                     return True
                 except Exception as e:
                     pass
         return False
-
+    
+    @transaction.atomic
     def save_coupon_use(self):
         if coupon_use := self.coupon_use:
             coupon_use.used += 1
@@ -48,9 +50,10 @@ class Cart(models.Model):
         self.coupon_use = None
         self.discount_amount = 0
         self.save()
-
+    
+    @transaction.atomic
     def get_cart_total(self):
-        self.total = sum(item.get_total() for item in self.items())
+        self.total = sum(item.get_total for item in self.items)
         if self.coupon_use:
             if self.total > 0:
                 self.discount_amount = self.coupon_use.coupon.calculate_discounted_total(self.total)
@@ -75,12 +78,13 @@ class CartItem(models.Model):
     """
     cart = models.ForeignKey(
         Cart, on_delete=models.CASCADE, related_name='cart_items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product')
     quantity = models.IntegerField(default=1)
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
-
+    
+    @property
     def get_total(self):
         return self.product.price * self.quantity
 
